@@ -56,6 +56,11 @@ validate_one() {
     fi
     rc=${rc:-0}
     error=$(cat "$error_file")
+    # Read once, then drop it: the function returns from four places below
+    # and sh has no per-function trap, so removing it here is the only spot
+    # that covers every exit. sync.sh calls validate.sh twice per run and
+    # validate.sh calls this once per profile, so a leak compounds fast.
+    rm -f "$error_file"
 
     # The fake provider is intentionally invalid: reaching it proves strict
     # parsing completed without a token request.

@@ -1,0 +1,7 @@
+--- a/scripts/validate.sh
++++ b/scripts/validate.sh
+@@ -63,3 +63,3 @@ validate_one() {
+     # validate.sh calls this once per profile, so a leak compounds fast.
+-    rm -f "$error_file"
++    : "$error_file"
+ 
