@@ -15,12 +15,14 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `approval_policy` (`"never"`)
 - `sandbox_mode` (`"danger-full-access"`)
 
-It also owns the top-level `[tui]` table, which sets `status_line` to
-`model-with-reasoning`, `current-dir`, and `thread-name`, plus the file profiles
-that it ships (`think.config.toml`, `code.config.toml`, and
-`review.config.toml`). The profile values mirror the fleet model policy and are
-checked by `tests/test-policy-agreement.sh` whenever that policy checkout is
-available.
+It also owns the top-level `[tui]` table, whose `status_line` mirrors the local
+Claude line with thread, model/reasoning, Git branch, directory, context usage,
+five-hour and weekly limits, and Codex version. The line uses only Codex-native
+items; it does not execute the Claude shell script or access Claude usage data.
+It also owns the file profiles that it ships (`think.config.toml`,
+`code.config.toml`, and `review.config.toml`). The profile values mirror the
+fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
+that policy checkout is available.
 
 These approval, sandbox, and TUI defaults apply only when the laptop-default
 ownership list is in use. The checked-in Mac Mini manifest remains scoped to

@@ -24,7 +24,7 @@ printf '%s\n' \
   'sandbox_mode = "danger-full-access"' \
   '' \
   '[tui]' \
-  'status_line = ["model-with-reasoning", "current-dir", "thread-name"]' > "$SOURCE/config.toml"
+  'status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "five-hour-limit", "weekly-limit", "codex-version"]' > "$SOURCE/config.toml"
 printf '%s\n' 'model = "profile-new"' > "$SOURCE/think.config.toml"
 printf '%s\n' \
   'model = "old"' \
@@ -54,7 +54,7 @@ PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOU
 grep -q 'model = "new"' "$LIVE/config.toml"
 grep -q 'approval_policy = "never"' "$LIVE/config.toml"
 grep -q 'sandbox_mode = "danger-full-access"' "$LIVE/config.toml"
-grep -q 'status_line = \["model-with-reasoning", "current-dir", "thread-name"\]' "$LIVE/config.toml"
+grep -q 'status_line = \["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "five-hour-limit", "weekly-limit", "codex-version"\]' "$LIVE/config.toml"
 grep -q '\[projects."/private/project"\]' "$LIVE/config.toml"
 grep -q '\[notice.model_migrations\]' "$LIVE/config.toml"
 grep -q '\[tui.model_availability_nux\]' "$LIVE/config.toml"
@@ -67,9 +67,14 @@ with open(sys.argv[1], "rb") as source:
 assert config["approval_policy"] == "never"
 assert config["sandbox_mode"] == "danger-full-access"
 assert config["tui"]["status_line"] == [
-    "model-with-reasoning",
-    "current-dir",
     "thread-name",
+    "model-with-reasoning",
+    "git-branch",
+    "current-dir",
+    "context-used",
+    "five-hour-limit",
+    "weekly-limit",
+    "codex-version",
 ]
 assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
@@ -113,7 +118,7 @@ printf '%s\n' \
   'sandbox_mode = "danger-full-access"' \
   '' \
   '[tui]' \
-  'status_line = ["model-with-reasoning", "current-dir", "thread-name"]' > "$SOURCE/config.toml"
+  'status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "five-hour-limit", "weekly-limit", "codex-version"]' > "$SOURCE/config.toml"
 mkdir -p "$WORK/mini"
 printf '%s\n' \
   'model = "old"' \
@@ -153,9 +158,14 @@ import tomllib
 with open(sys.argv[1], "rb") as source:
     config = tomllib.load(source)
 assert config["tui"]["status_line"] == [
-    "model-with-reasoning",
-    "current-dir",
     "thread-name",
+    "model-with-reasoning",
+    "git-branch",
+    "current-dir",
+    "context-used",
+    "five-hour-limit",
+    "weekly-limit",
+    "codex-version",
 ]
 assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
@@ -182,9 +192,14 @@ import tomllib
 with open(sys.argv[1], "rb") as source:
     config = tomllib.load(source)
 assert config["tui"]["status_line"] == [
-    "model-with-reasoning",
-    "current-dir",
     "thread-name",
+    "model-with-reasoning",
+    "git-branch",
+    "current-dir",
+    "context-used",
+    "five-hour-limit",
+    "weekly-limit",
+    "codex-version",
 ]
 assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
