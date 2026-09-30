@@ -24,7 +24,7 @@ if ! command -v codex >/dev/null 2>&1; then die_preflight "codex is required"; f
 if ! python3 -c 'import tomllib' >/dev/null 2>&1; then die_preflight "python3 with tomllib is required"; fi
 if [ ! -f "$SOURCE_CODEX/config.toml" ]; then die_preflight "missing $SOURCE_CODEX/config.toml"; fi
 
-if [ "${CODEX_CONFIG_STATION+x}" = x ]; then
+if [ -n "${CODEX_CONFIG_STATION:-}" ]; then
     STATION=$CODEX_CONFIG_STATION
     EXPLICIT_STATION=true
 else
