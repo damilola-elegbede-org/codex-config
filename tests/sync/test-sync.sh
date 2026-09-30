@@ -24,7 +24,7 @@ printf '%s\n' \
   'sandbox_mode = "danger-full-access"' \
   '' \
   '[tui]' \
-  'status_line = ["thread-name", "model-with-reasoning", "current-dir", "context-used", "task-progress"]' > "$SOURCE/config.toml"
+  'status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"]' > "$SOURCE/config.toml"
 printf '%s\n' 'model = "profile-new"' > "$SOURCE/think.config.toml"
 printf '%s\n' \
   'model = "old"' \
@@ -54,7 +54,7 @@ PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOU
 grep -q 'model = "new"' "$LIVE/config.toml"
 grep -q 'approval_policy = "never"' "$LIVE/config.toml"
 grep -q 'sandbox_mode = "danger-full-access"' "$LIVE/config.toml"
-grep -q 'status_line = \["thread-name", "model-with-reasoning", "current-dir", "context-used", "task-progress"\]' "$LIVE/config.toml"
+grep -q 'status_line = \["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"\]' "$LIVE/config.toml"
 grep -q '\[projects."/private/project"\]' "$LIVE/config.toml"
 grep -q '\[notice.model_migrations\]' "$LIVE/config.toml"
 grep -q '\[tui.model_availability_nux\]' "$LIVE/config.toml"
@@ -69,6 +69,7 @@ assert config["sandbox_mode"] == "danger-full-access"
 assert config["tui"]["status_line"] == [
     "thread-name",
     "model-with-reasoning",
+    "git-branch",
     "current-dir",
     "context-used",
     "task-progress",
@@ -115,7 +116,7 @@ printf '%s\n' \
   'sandbox_mode = "danger-full-access"' \
   '' \
   '[tui]' \
-  'status_line = ["thread-name", "model-with-reasoning", "current-dir", "context-used", "task-progress"]' > "$SOURCE/config.toml"
+  'status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"]' > "$SOURCE/config.toml"
 mkdir -p "$WORK/mini"
 printf '%s\n' \
   'model = "old"' \
@@ -157,6 +158,7 @@ with open(sys.argv[1], "rb") as source:
 assert config["tui"]["status_line"] == [
     "thread-name",
     "model-with-reasoning",
+    "git-branch",
     "current-dir",
     "context-used",
     "task-progress",
@@ -188,6 +190,7 @@ with open(sys.argv[1], "rb") as source:
 assert config["tui"]["status_line"] == [
     "thread-name",
     "model-with-reasoning",
+    "git-branch",
     "current-dir",
     "context-used",
     "task-progress",
@@ -198,8 +201,20 @@ PY
 mkdir -p "$WORK/dotted-tui"
 printf '%s\n' \
   'model = "old"' \
-  'tui.status_line = ["old-status"]' \
-  'web_search = "cached"' > "$WORK/dotted-tui/config.toml"
+  '"approval_policy" = "on-request"' \
+  '"sandbox_mode" = "workspace-write"' \
+  'tui.model_availability_nux.old = 1' \
+  'tui.model_availability_nux."🚀" = 2' \
+  'tui.status_line = [' \
+  '  "old-status",' \
+  ']' \
+  'web_search = "cached"' \
+  '[local]' \
+  'tui.status_line = ["nested-status"]' \
+  'description = """' \
+  'tui.status_line = ["string-content"]' \
+  '[tui]' \
+  '"""' > "$WORK/dotted-tui/config.toml"
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/dotted-tui.out"
 python3 - "$WORK/dotted-tui/config.toml" <<'PY'
@@ -211,11 +226,17 @@ with open(sys.argv[1], "rb") as source:
 assert config["tui"]["status_line"] == [
     "thread-name",
     "model-with-reasoning",
+    "git-branch",
     "current-dir",
     "context-used",
     "task-progress",
 ]
 assert config["web_search"] == "live"
+assert config["approval_policy"] == "never"
+assert config["sandbox_mode"] == "danger-full-access"
+assert config["tui"]["model_availability_nux"] == {"old": 1, "🚀": 2}
+assert config["local"]["tui"]["status_line"] == ["nested-status"]
+assert config["local"]["description"] == 'tui.status_line = ["string-content"]\n[tui]\n'
 PY
 
 mkdir -p "$WORK/multiline-dotted-tui"
@@ -243,6 +264,7 @@ with open(sys.argv[1], "rb") as source:
 assert config["tui"]["status_line"] == [
     "thread-name",
     "model-with-reasoning",
+    "git-branch",
     "current-dir",
     "context-used",
     "task-progress",

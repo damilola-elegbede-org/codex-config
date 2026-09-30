@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Replace owned top-level TOML scalar assignments and tables."""
+import json
 import os
 import pathlib
 import re
@@ -20,6 +21,7 @@ for key in owned:
         raise SystemExit(f"owned key must be top-level: {key}")
 
 def table_name(line):
+    """Return the decoded name of a root table header, if present."""
     match = header_pattern.match(line.strip())
     if match is None:
         return None
@@ -30,12 +32,11 @@ def table_name(line):
 
 
 def dotted_assignment_path(line):
+    """Decode the path of a TOML assignment, including quoted keys."""
     stripped = line.strip()
     if "=" not in stripped or stripped.startswith("#"):
         return None
     key = stripped.split("=", 1)[0].strip()
-    if "." not in key:
-        return None
     try:
         value = tomllib.loads(f"{key} = 0")
     except tomllib.TOMLDecodeError:
@@ -47,32 +48,33 @@ def dotted_assignment_path(line):
     return tuple(path) if path else None
 
 
-def assignment_value_span(lines, index):
-    """Physical line count of the value at lines[index] (`key = value...`).
-
-    Trial-parses progressively longer joins to find where a multi-line array
-    or multi-line string closes, so callers can remove or pass through the
-    whole value instead of only its opening line.
-    """
-    first = lines[index]
-    tail = first[first.index("=") + 1 :]
-    end = index
-    while True:
+def statements(lines):
+    """Group complete TOML assignments so multiline values stay intact."""
+    pending = []
+    for line in lines:
+        if pending:
+            pending.append(line)
+        elif "=" in line and not line.lstrip().startswith(("#", "[")):
+            pending.append(line)
+        else:
+            yield line
+            continue
+        statement = "\n".join(pending)
         try:
-            tomllib.loads(f"v = {tail}")
-            return end - index + 1
+            tomllib.loads(statement)
         except tomllib.TOMLDecodeError:
-            if end + 1 >= len(lines):
-                return 1
-            end += 1
-            tail = f"{tail}\n{lines[end]}"
+            continue
+        yield statement
+        pending = []
+    if pending:
+        raise SystemExit("incomplete or invalid TOML assignment")
 
 
 assignments = {}
 tables = {}
 current_table = None
 in_source_table = False
-for number, line in enumerate(source.read_text().splitlines(), start=1):
+for number, line in enumerate(statements(source.read_text().splitlines()), start=1):
     name = table_name(line)
     if name is not None:
         if name not in allowed:
@@ -93,45 +95,27 @@ for number, line in enumerate(source.read_text().splitlines(), start=1):
         continue
     stripped = line.strip()
     if "=" in stripped and not stripped.startswith("#"):
-        key = stripped.split("=", 1)[0].strip()
+        key = dotted_assignment_path(line)[0]
         if key not in allowed:
             raise SystemExit(f"{source}:{number}: unowned top-level key {key}")
         if key in owned:
             assignments[key] = line
 
-def continuation_line_indices(lines):
-    """Indices of lines that are the 2nd+ physical line of a top-level
-    multi-line value (array or string), so a naive line scan never mistakes
-    a value's body text for a real table header or assignment."""
-    skip = set()
-    in_table = False
-    index = 0
-    while index < len(lines):
-        line = lines[index]
-        if index in skip:
-            index += 1
-            continue
-        if table_name(line) is not None or line.strip().startswith("["):
-            in_table = True
-            index += 1
-            continue
-        stripped = line.strip()
-        if not in_table and "=" in stripped and not stripped.startswith("#"):
-            span = assignment_value_span(lines, index)
-            skip.update(range(index + 1, index + span))
-            index += span
-            continue
-        index += 1
-    return skip
-
-
-lines = destination.read_text().splitlines() if destination.exists() else []
-value_continuation_lines = continuation_line_indices(lines)
-destination_tables = {
-    name
-    for i, line in enumerate(lines)
-    if i not in value_continuation_lines and (name := table_name(line)) is not None
-}
+lines = list(statements(destination.read_text().splitlines())) if destination.exists() else []
+destination_tables = {name for line in lines if (name := table_name(line)) is not None}
+root_nested = {}
+at_root = True
+for line in lines:
+    if line.lstrip().startswith("["):
+        at_root = False
+    path = dotted_assignment_path(line) if at_root else None
+    if path and len(path) > 2 and path[0] in tables:
+        relative_key = ".".join(json.dumps(part, ensure_ascii=False) for part in path[1:])
+        root_nested.setdefault(path[0], []).append(
+            relative_key + " =" + line.split("=", 1)[1]
+        )
+for name, nested in root_nested.items():
+    tables[name].extend(nested)
 result = []
 seen_scalars = set()
 seen_tables = set()
@@ -141,6 +125,7 @@ inserted_missing = False
 
 
 def insert_missing():
+    """Insert absent owned entries before destination table declarations."""
     for key in owned:
         if key not in seen_scalars and key in assignments:
             result.append(assignments[key])
@@ -149,13 +134,10 @@ def insert_missing():
             result.extend(tables[key])
 
 
-index = 0
-while index < len(lines):
-    line = lines[index]
+for line in lines:
     dotted_path = dotted_assignment_path(line)
-    if dotted_path is not None and dotted_path[0] in owned:
-        if len(dotted_path) == 2:
-            index += assignment_value_span(lines, index)
+    if not in_table and dotted_path is not None and dotted_path[0] in owned:
+        if len(dotted_path) == 2 or dotted_path[0] in root_nested:
             continue
     name = table_name(line)
     if name is not None:
@@ -168,10 +150,8 @@ while index < len(lines):
             seen_tables.add(name)
             if name in tables:
                 result.extend(tables[name])
-            index += 1
             continue
         result.append(line)
-        index += 1
         continue
     if line.strip().startswith("["):
         if not inserted_missing:
@@ -180,25 +160,18 @@ while index < len(lines):
         in_table = True
         skipping_owned_table = False
         result.append(line)
-        index += 1
         continue
     if skipping_owned_table:
-        index += 1
         continue
     stripped = line.strip()
     if not in_table and "=" in stripped and not stripped.startswith("#"):
-        key = stripped.split("=", 1)[0].strip()
-        span = assignment_value_span(lines, index)
+        key = dotted_path[0] if dotted_path and len(dotted_path) == 1 else stripped.split("=", 1)[0].strip()
         if key in owned:
             seen_scalars.add(key)
             if key in assignments:
                 result.append(assignments[key])
-        else:
-            result.extend(lines[index : index + span])
-        index += span
-        continue
+            continue
     result.append(line)
-    index += 1
 if not inserted_missing:
     insert_missing()
 

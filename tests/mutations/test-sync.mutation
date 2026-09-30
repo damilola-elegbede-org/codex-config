@@ -1,7 +1,7 @@
 --- a/scripts/merge-config.py
 +++ b/scripts/merge-config.py
 @@ -50,5 +50,5 @@ for number, line in enumerate(source.read_text().splitlines(), start=1):
-         key = stripped.split("=", 1)[0].strip()
+         key = dotted_assignment_path(line)[0]
          if key not in allowed:
              raise SystemExit(f"{source}:{number}: unowned top-level key {key}")
 -        if key in owned:
