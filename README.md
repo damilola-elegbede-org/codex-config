@@ -7,21 +7,33 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 
 ## Owned configuration
 
-`system-configs/.codex/config.toml` owns only these top-level keys:
+`system-configs/.codex/config.toml` owns these top-level scalar keys:
 
 - `model`
 - `model_reasoning_effort`
 - `web_search`
+- `approval_policy` (`"never"`)
+- `sandbox_mode` (`"danger-full-access"`)
 
+It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
+model/reasoning, Git branch, current directory, context usage, weekly and five-hour
+remaining quotas, and task progress. Native theme-derived colors are enabled. The line
+uses only Codex-native items; it does not execute the Claude shell script or
+access Claude usage data.
 It also owns the file profiles that it ships (`think.config.toml`,
 `code.config.toml`, and `review.config.toml`). The profile values mirror the
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
+These approval, sandbox, and TUI defaults apply only when the laptop-default
+ownership list is in use. The checked-in Mac Mini manifest remains scoped to
+model settings and profiles, so it does not receive them.
+
 ## Never touched
 
-Sync does not overwrite or back up `[projects.*]`,
-`[notice.model_migrations]`, `[tui.*]`, `auth.json`, `sessions/`,
+Sync does not overwrite `[projects.*]`, `[notice.model_migrations]`, or nested
+`[tui.*]` state such as `[tui.model_availability_nux]`. It atomically replaces
+the owned root `[tui]` table. It does not back up `auth.json`, `sessions/`,
 `history.jsonl`, `*.sqlite*`, `cache/`, `log/`, `tmp/`, `plugins/`,
 `skills/.system`, or `rules/default.rules`. Unknown profile files also remain
 in place. These are Codex state or machine-local configuration, not repository
@@ -53,9 +65,12 @@ scripts/sync.sh
 Sync stages and validates first, makes an owned-only timestamped backup, then
 atomically replaces each owned file and validates again. `--no-backup` disables
 that backup; `--force` bypasses the local `origin/main` freshness comparison.
-Station manifests scope fleet-sensitive surfaces. No manifest uses the
-laptop-first defaults; the checked-in Mini manifest intentionally enables only
-the model keys and profiles.
+Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
+laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
+for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
+auto-detected host instead receives the restricted Mini-equivalent key set
+(`model`, `model_reasoning_effort`, and `web_search`). The checked-in Mini
+manifest intentionally enables only those model keys and profiles.
 
 ## Rollout
 

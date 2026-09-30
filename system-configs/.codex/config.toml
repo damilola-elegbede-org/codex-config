@@ -1,5 +1,11 @@
-# Only these top-level keys are owned by this repository. Sync merges them into
-# the existing config so Codex-managed tables and machine-local settings survive.
-model = "gpt-5.6-terra"
-model_reasoning_effort = "high"
+# Only these top-level entries are owned by this repository. Sync merges them
+# into the existing config so unowned machine-local settings survive.
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
 web_search = "live"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[tui]
+status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "weekly-limit", "five-hour-limit", "task-progress"]
+status_line_use_colors = true
