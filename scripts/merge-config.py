@@ -31,12 +31,34 @@ def table_name(line):
     return key
 
 
+def assignment_parts(line):
+    """Split at the assignment delimiter, not an equals sign in a quoted key."""
+    quote = None
+    escaped = False
+    for index, char in enumerate(line):
+        if escaped:
+            escaped = False
+        elif quote == '"' and char == "\\":
+            escaped = True
+        elif quote:
+            if char == quote:
+                quote = None
+        elif char in "\"'":
+            quote = char
+        elif char == "=":
+            return line[:index].strip(), line[index + 1:]
+    return None
+
+
 def dotted_assignment_path(line):
     """Decode the path of a TOML assignment, including quoted keys."""
     stripped = line.strip()
     if "=" not in stripped or stripped.startswith("#"):
         return None
-    key = stripped.split("=", 1)[0].strip()
+    parts = assignment_parts(stripped)
+    if parts is None:
+        return None
+    key = parts[0]
     try:
         value = tomllib.loads(f"{key} = 0")
     except tomllib.TOMLDecodeError:
@@ -109,10 +131,15 @@ for line in lines:
     if line.lstrip().startswith("["):
         at_root = False
     path = dotted_assignment_path(line) if at_root else None
-    if path and len(path) > 2 and path[0] in tables:
+    if path and len(path) >= 2 and path[0] in tables:
+        value = tomllib.loads(line)
+        for part in path:
+            value = value[part]
+        if len(path) == 2 and not isinstance(value, dict):
+            continue
         relative_key = ".".join(json.dumps(part, ensure_ascii=False) for part in path[1:])
         root_nested.setdefault(path[0], []).append(
-            relative_key + " =" + line.split("=", 1)[1]
+            relative_key + " =" + assignment_parts(line)[1]
         )
 for name, nested in root_nested.items():
     tables[name].extend(nested)
