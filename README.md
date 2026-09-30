@@ -64,9 +64,12 @@ scripts/sync.sh
 Sync stages and validates first, makes an owned-only timestamped backup, then
 atomically replaces each owned file and validates again. `--no-backup` disables
 that backup; `--force` bypasses the local `origin/main` freshness comparison.
-Station manifests scope fleet-sensitive surfaces. No manifest uses the
-laptop-first defaults; the checked-in Mini manifest intentionally enables only
-the model keys and profiles.
+Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
+laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
+for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
+auto-detected host instead receives the restricted Mini-equivalent key set
+(`model`, `model_reasoning_effort`, and `web_search`). The checked-in Mini
+manifest intentionally enables only those model keys and profiles.
 
 ## Rollout
 

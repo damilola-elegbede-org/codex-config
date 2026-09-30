@@ -16,6 +16,8 @@ printf '%s\n' '#!/bin/sh' \
   'echo "Model provider __nonexistent__ not found" >&2' \
   'exit 1' > "$WORK/bin/codex"
 chmod +x "$WORK/bin/codex"
+printf '%s\n' '#!/bin/sh' 'printf "%s\\n" generic-auto-host' > "$WORK/bin/scutil"
+chmod +x "$WORK/bin/scutil"
 printf '%s\n' \
   'model = "new"' \
   'model_reasoning_effort = "high"' \
@@ -48,6 +50,25 @@ printf '%s\n' 'model = "unknown"' > "$LIVE/custom.config.toml"
 printf '%s\n' 'secret' > "$LIVE/auth.json"
 mkdir -p "$LIVE/sessions"
 printf '%s\n' 'state' > "$LIVE/sessions/x"
+
+mkdir -p "$WORK/generic-auto"
+cp "$LIVE/config.toml" "$WORK/generic-auto/config.toml"
+unset CODEX_CONFIG_STATION
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/generic-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
+  "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/generic-auto.out"
+python3 - "$WORK/generic-auto/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["model"] == "new"
+assert config["model_reasoning_effort"] == "high"
+assert config["web_search"] == "live"
+assert config["approval_policy"] == "on-request"
+assert config["sandbox_mode"] == "workspace-write"
+assert config["tui"]["status_line"] == ["old-status"]
+PY
 
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/sync.out"
@@ -276,6 +297,23 @@ if grep -q '^  "old-status",$' "$WORK/multiline-dotted-tui/config.toml"; then
     echo "orphaned dotted-array continuation survived" >&2
     exit 1
 fi
+
+mkdir -p "$WORK/profile-dotted-tui"
+printf '%s\n' \
+  'model = "old"' \
+  '' \
+  '[profiles.custom]' \
+  'tui.status_line = ["custom-status"]' > "$WORK/profile-dotted-tui/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/profile-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/profile-dotted-tui.out"
+python3 - "$WORK/profile-dotted-tui/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["profiles"]["custom"]["tui"]["status_line"] == ["custom-status"]
+PY
 
 printf '%s\n' \
   'model = "newer"' \
