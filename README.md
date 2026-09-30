@@ -7,21 +7,30 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 
 ## Owned configuration
 
-`system-configs/.codex/config.toml` owns only these top-level keys:
+`system-configs/.codex/config.toml` owns these top-level scalar keys:
 
 - `model`
 - `model_reasoning_effort`
 - `web_search`
+- `approval_policy` (`"never"`)
+- `sandbox_mode` (`"danger-full-access"`)
 
-It also owns the file profiles that it ships (`think.config.toml`,
-`code.config.toml`, and `review.config.toml`). The profile values mirror the
-fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
-that policy checkout is available.
+It also owns the top-level `[tui]` table, which sets `status_line` to
+`model-with-reasoning`, `current-dir`, and `thread-name`, plus the file profiles
+that it ships (`think.config.toml`, `code.config.toml`, and
+`review.config.toml`). The profile values mirror the fleet model policy and are
+checked by `tests/test-policy-agreement.sh` whenever that policy checkout is
+available.
+
+These approval, sandbox, and TUI defaults apply only when the laptop-default
+ownership list is in use. The checked-in Mac Mini manifest remains scoped to
+model settings and profiles, so it does not receive them.
 
 ## Never touched
 
-Sync does not overwrite or back up `[projects.*]`,
-`[notice.model_migrations]`, `[tui.*]`, `auth.json`, `sessions/`,
+Sync does not overwrite `[projects.*]`, `[notice.model_migrations]`, or nested
+`[tui.*]` state such as `[tui.model_availability_nux]`. It atomically replaces
+the owned root `[tui]` table. It does not back up `auth.json`, `sessions/`,
 `history.jsonl`, `*.sqlite*`, `cache/`, `log/`, `tmp/`, `plugins/`,
 `skills/.system`, or `rules/default.rules`. Unknown profile files also remain
 in place. These are Codex state or machine-local configuration, not repository

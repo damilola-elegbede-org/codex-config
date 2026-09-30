@@ -44,7 +44,8 @@ else:
 PY
 }
 CONFIG_MODE=$(manifest_value config merge)
-OWNED_KEYS=$(manifest_value config_owned_keys "model model_reasoning_effort web_search")
+ALL_OWNED_KEYS="model model_reasoning_effort web_search approval_policy sandbox_mode tui"
+OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
 PROFILES=$(manifest_value profiles true)
 AGENTS_MD=$(manifest_value agents_md false)
 RULES=$(manifest_value rules false)
@@ -66,7 +67,7 @@ STAGE=$(mktemp -d)
 trap 'rm -rf "$STAGE"' EXIT HUP INT TERM
 mkdir -p "$STAGE"
 if [ -f "$TARGET_CODEX/config.toml" ]; then cp "$TARGET_CODEX/config.toml" "$STAGE/config.toml"; else : > "$STAGE/config.toml"; fi
-if ! python3 "$ROOT/scripts/merge-config.py" "$SOURCE_CODEX/config.toml" "$STAGE/config.toml" $OWNED_KEYS; then
+if ! CODEX_CONFIG_ALLOWED_KEYS="$ALL_OWNED_KEYS" python3 "$ROOT/scripts/merge-config.py" "$SOURCE_CODEX/config.toml" "$STAGE/config.toml" $OWNED_KEYS; then
     echo "staging validation failed; live configuration was not changed" >&2
     exit 2
 fi

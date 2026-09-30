@@ -19,19 +19,28 @@ chmod +x "$WORK/bin/codex"
 printf '%s\n' \
   'model = "new"' \
   'model_reasoning_effort = "high"' \
-  'web_search = "live"' > "$SOURCE/config.toml"
+  'web_search = "live"' \
+  'approval_policy = "never"' \
+  'sandbox_mode = "danger-full-access"' \
+  '' \
+  '[tui]' \
+  'status_line = ["model-with-reasoning", "current-dir", "thread-name"]' > "$SOURCE/config.toml"
 printf '%s\n' 'model = "profile-new"' > "$SOURCE/think.config.toml"
 printf '%s\n' \
   'model = "old"' \
   'model_reasoning_effort = "low"' \
   'web_search = "cached"' \
-  'approval_policy = "never"' \
+  'approval_policy = "on-request"' \
+  'sandbox_mode = "workspace-write"' \
   '' \
   '[projects."/private/project"]' \
   'trust_level = "trusted"' \
   '' \
   '[notice.model_migrations]' \
   'old = "new"' \
+  '' \
+  '[tui]' \
+  'status_line = ["old-status"]' \
   '' \
   '[tui.model_availability_nux]' \
   'old = 1' > "$LIVE/config.toml"
@@ -44,9 +53,26 @@ PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOU
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/sync.out"
 grep -q 'model = "new"' "$LIVE/config.toml"
 grep -q 'approval_policy = "never"' "$LIVE/config.toml"
+grep -q 'sandbox_mode = "danger-full-access"' "$LIVE/config.toml"
+grep -q 'status_line = \["model-with-reasoning", "current-dir", "thread-name"\]' "$LIVE/config.toml"
 grep -q '\[projects."/private/project"\]' "$LIVE/config.toml"
 grep -q '\[notice.model_migrations\]' "$LIVE/config.toml"
 grep -q '\[tui.model_availability_nux\]' "$LIVE/config.toml"
+python3 - "$LIVE/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["approval_policy"] == "never"
+assert config["sandbox_mode"] == "danger-full-access"
+assert config["tui"]["status_line"] == [
+    "model-with-reasoning",
+    "current-dir",
+    "thread-name",
+]
+assert config["tui"]["model_availability_nux"] == {"old": 1}
+PY
 grep -q 'model = "unknown"' "$LIVE/custom.config.toml"
 backup=$(find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.*' -print | head -n 1)
 [ -f "$backup/config.toml" ]
@@ -78,6 +104,90 @@ if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$
 fi
 [ "$(cksum "$LIVE/config.toml")" = "$before" ]
 grep -q 'staging validation failed' "$WORK/bad.out"
+
+printf '%s\n' \
+  'model = "newer"' \
+  'model_reasoning_effort = "high"' \
+  'web_search = "live"' \
+  'approval_policy = "never"' \
+  'sandbox_mode = "danger-full-access"' \
+  '' \
+  '[tui]' \
+  'status_line = ["model-with-reasoning", "current-dir", "thread-name"]' > "$SOURCE/config.toml"
+mkdir -p "$WORK/mini"
+printf '%s\n' \
+  'model = "old"' \
+  'model_reasoning_effort = "low"' \
+  'web_search = "cached"' \
+  'approval_policy = "on-request"' \
+  'sandbox_mode = "workspace-write"' \
+  '' \
+  '[tui]' \
+  'status_line = ["mini-status"]' > "$WORK/mini/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/mini" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=damilola-mbm "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/mini.out"
+grep -q 'model = "newer"' "$WORK/mini/config.toml"
+grep -q 'approval_policy = "on-request"' "$WORK/mini/config.toml"
+grep -q 'sandbox_mode = "workspace-write"' "$WORK/mini/config.toml"
+grep -q 'status_line = \["mini-status"\]' "$WORK/mini/config.toml"
+
+mkdir -p "$WORK/alternate-header"
+printf '%s\n' \
+  'model = "old"' \
+  'model_reasoning_effort = "low"' \
+  'web_search = "cached"' \
+  'approval_policy = "on-request"' \
+  'sandbox_mode = "workspace-write"' \
+  '' \
+  '[ tui ] # local status-line settings' \
+  'status_line = ["old-status"]' \
+  '' \
+  '[tui.model_availability_nux]' \
+  'old = 1' > "$WORK/alternate-header/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/alternate-header" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/alternate-header.out"
+python3 - "$WORK/alternate-header/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["tui"]["status_line"] == [
+    "model-with-reasoning",
+    "current-dir",
+    "thread-name",
+]
+assert config["tui"]["model_availability_nux"] == {"old": 1}
+PY
+
+mkdir -p "$WORK/quoted-header"
+printf '%s\n' \
+  'model = "old"' \
+  'model_reasoning_effort = "low"' \
+  'web_search = "cached"' \
+  'approval_policy = "on-request"' \
+  'sandbox_mode = "workspace-write"' \
+  '' \
+  '["tui"] # local status-line settings' \
+  'status_line = ["old-status"]' \
+  '' \
+  '[tui.model_availability_nux]' \
+  'old = 1' > "$WORK/quoted-header/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/quoted-header" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/quoted-header.out"
+python3 - "$WORK/quoted-header/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["tui"]["status_line"] == [
+    "model-with-reasoning",
+    "current-dir",
+    "thread-name",
+]
+assert config["tui"]["model_availability_nux"] == {"old": 1}
+PY
 
 printf '%s\n' \
   'model = "newer"' \
