@@ -153,7 +153,7 @@ index = 0
 while index < len(lines):
     line = lines[index]
     dotted_path = dotted_assignment_path(line)
-    if dotted_path is not None and dotted_path[0] in owned:
+    if not in_table and dotted_path is not None and dotted_path[0] in owned:
         if len(dotted_path) == 2:
             index += assignment_value_span(lines, index)
             continue

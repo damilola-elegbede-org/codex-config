@@ -24,7 +24,13 @@ if ! command -v codex >/dev/null 2>&1; then die_preflight "codex is required"; f
 if ! python3 -c 'import tomllib' >/dev/null 2>&1; then die_preflight "python3 with tomllib is required"; fi
 if [ ! -f "$SOURCE_CODEX/config.toml" ]; then die_preflight "missing $SOURCE_CODEX/config.toml"; fi
 
-STATION=${CODEX_CONFIG_STATION:-$(scutil --get LocalHostName 2>/dev/null || hostname -s)}
+if [ "${CODEX_CONFIG_STATION+x}" = x ]; then
+    STATION=$CODEX_CONFIG_STATION
+    EXPLICIT_STATION=true
+else
+    STATION=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
+    EXPLICIT_STATION=false
+fi
 MANIFEST="$ROOT/sync-manifests/$STATION.json"
 if [ -f "$MANIFEST" ] && ! python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$MANIFEST" >/dev/null 2>&1; then
     die_preflight "invalid manifest: $MANIFEST"
@@ -45,7 +51,12 @@ PY
 }
 CONFIG_MODE=$(manifest_value config merge)
 ALL_OWNED_KEYS="model model_reasoning_effort web_search approval_policy sandbox_mode tui"
-OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
+SAFE_OWNED_KEYS="model model_reasoning_effort web_search"
+if [ -f "$MANIFEST" ] || [ "$EXPLICIT_STATION" = true ]; then
+    OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
+else
+    OWNED_KEYS=$SAFE_OWNED_KEYS
+fi
 PROFILES=$(manifest_value profiles true)
 AGENTS_MD=$(manifest_value agents_md false)
 RULES=$(manifest_value rules false)
