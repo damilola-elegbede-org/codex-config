@@ -15,10 +15,10 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `approval_policy` (`"never"`)
 - `sandbox_mode` (`"danger-full-access"`)
 
-It also owns the top-level `[tui]` table, whose `status_line` mirrors the local
-Claude line with thread, model/reasoning, Git branch, directory, context usage,
-five-hour and weekly limits, and Codex version. The line uses only Codex-native
-items; it does not execute the Claude shell script or access Claude usage data.
+It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
+model/reasoning, current directory, context usage, and task progress. The line
+uses only Codex-native items; it does not execute the Claude shell script or
+access Claude usage data.
 It also owns the file profiles that it ships (`think.config.toml`,
 `code.config.toml`, and `review.config.toml`). The profile values mirror the
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever

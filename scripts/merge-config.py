@@ -29,6 +29,24 @@ def table_name(line):
     return key
 
 
+def dotted_assignment_path(line):
+    stripped = line.strip()
+    if "=" not in stripped or stripped.startswith("#"):
+        return None
+    key = stripped.split("=", 1)[0].strip()
+    if "." not in key:
+        return None
+    try:
+        value = tomllib.loads(f"{key} = 0")
+    except tomllib.TOMLDecodeError:
+        return None
+    path = []
+    while isinstance(value, dict) and len(value) == 1:
+        key, value = next(iter(value.items()))
+        path.append(key)
+    return tuple(path) if path else None
+
+
 assignments = {}
 tables = {}
 current_table = None
@@ -80,6 +98,10 @@ def insert_missing():
 
 
 for line in lines:
+    dotted_path = dotted_assignment_path(line)
+    if dotted_path is not None and dotted_path[0] in owned:
+        if len(dotted_path) == 2:
+            continue
     name = table_name(line)
     if name is not None:
         if not inserted_missing:
