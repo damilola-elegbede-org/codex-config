@@ -218,6 +218,43 @@ assert config["tui"]["status_line"] == [
 assert config["web_search"] == "live"
 PY
 
+mkdir -p "$WORK/multiline-dotted-tui"
+printf '%s\n' \
+  'model = "old"' \
+  'tui.status_line = [' \
+  '  "old-status",' \
+  '  ["nested-old"],' \
+  ']' \
+  'note = """keep' \
+  'tui.status_line = ["literal assignment text"]' \
+  '[tui]' \
+  '"""' \
+  'web_search = "cached"' > "$WORK/multiline-dotted-tui/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/multiline-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/multiline-dotted-tui.out"
+python3 -c 'import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))' \
+  "$WORK/multiline-dotted-tui/config.toml"
+python3 - "$WORK/multiline-dotted-tui/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["tui"]["status_line"] == [
+    "thread-name",
+    "model-with-reasoning",
+    "current-dir",
+    "context-used",
+    "task-progress",
+]
+assert config["note"] == 'keep\ntui.status_line = ["literal assignment text"]\n[tui]\n'
+assert config["web_search"] == "live"
+PY
+if grep -q '^  "old-status",$' "$WORK/multiline-dotted-tui/config.toml"; then
+    echo "orphaned dotted-array continuation survived" >&2
+    exit 1
+fi
+
 printf '%s\n' \
   'model = "newer"' \
   'model_reasoning_effort = "high"' > "$SOURCE/config.toml"

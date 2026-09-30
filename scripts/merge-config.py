@@ -47,6 +47,27 @@ def dotted_assignment_path(line):
     return tuple(path) if path else None
 
 
+def assignment_value_span(lines, index):
+    """Physical line count of the value at lines[index] (`key = value...`).
+
+    Trial-parses progressively longer joins to find where a multi-line array
+    or multi-line string closes, so callers can remove or pass through the
+    whole value instead of only its opening line.
+    """
+    first = lines[index]
+    tail = first[first.index("=") + 1 :]
+    end = index
+    while True:
+        try:
+            tomllib.loads(f"v = {tail}")
+            return end - index + 1
+        except tomllib.TOMLDecodeError:
+            if end + 1 >= len(lines):
+                return 1
+            end += 1
+            tail = f"{tail}\n{lines[end]}"
+
+
 assignments = {}
 tables = {}
 current_table = None
@@ -78,8 +99,39 @@ for number, line in enumerate(source.read_text().splitlines(), start=1):
         if key in owned:
             assignments[key] = line
 
+def continuation_line_indices(lines):
+    """Indices of lines that are the 2nd+ physical line of a top-level
+    multi-line value (array or string), so a naive line scan never mistakes
+    a value's body text for a real table header or assignment."""
+    skip = set()
+    in_table = False
+    index = 0
+    while index < len(lines):
+        line = lines[index]
+        if index in skip:
+            index += 1
+            continue
+        if table_name(line) is not None or line.strip().startswith("["):
+            in_table = True
+            index += 1
+            continue
+        stripped = line.strip()
+        if not in_table and "=" in stripped and not stripped.startswith("#"):
+            span = assignment_value_span(lines, index)
+            skip.update(range(index + 1, index + span))
+            index += span
+            continue
+        index += 1
+    return skip
+
+
 lines = destination.read_text().splitlines() if destination.exists() else []
-destination_tables = {name for line in lines if (name := table_name(line)) is not None}
+value_continuation_lines = continuation_line_indices(lines)
+destination_tables = {
+    name
+    for i, line in enumerate(lines)
+    if i not in value_continuation_lines and (name := table_name(line)) is not None
+}
 result = []
 seen_scalars = set()
 seen_tables = set()
@@ -97,10 +149,13 @@ def insert_missing():
             result.extend(tables[key])
 
 
-for line in lines:
+index = 0
+while index < len(lines):
+    line = lines[index]
     dotted_path = dotted_assignment_path(line)
     if dotted_path is not None and dotted_path[0] in owned:
         if len(dotted_path) == 2:
+            index += assignment_value_span(lines, index)
             continue
     name = table_name(line)
     if name is not None:
@@ -113,8 +168,10 @@ for line in lines:
             seen_tables.add(name)
             if name in tables:
                 result.extend(tables[name])
+            index += 1
             continue
         result.append(line)
+        index += 1
         continue
     if line.strip().startswith("["):
         if not inserted_missing:
@@ -123,18 +180,25 @@ for line in lines:
         in_table = True
         skipping_owned_table = False
         result.append(line)
+        index += 1
         continue
     if skipping_owned_table:
+        index += 1
         continue
     stripped = line.strip()
     if not in_table and "=" in stripped and not stripped.startswith("#"):
         key = stripped.split("=", 1)[0].strip()
+        span = assignment_value_span(lines, index)
         if key in owned:
             seen_scalars.add(key)
             if key in assignments:
                 result.append(assignments[key])
-            continue
+        else:
+            result.extend(lines[index : index + span])
+        index += span
+        continue
     result.append(line)
+    index += 1
 if not inserted_missing:
     insert_missing()
 
