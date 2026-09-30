@@ -16,7 +16,8 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `sandbox_mode` (`"danger-full-access"`)
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
-model/reasoning, Git branch, current directory, context usage, and task progress. The line
+model/reasoning, Git branch, current directory, context usage, weekly and five-hour
+remaining quotas, and task progress. Native theme-derived colors are enabled. The line
 uses only Codex-native items; it does not execute the Claude shell script or
 access Claude usage data.
 It also owns the file profiles that it ships (`think.config.toml`,

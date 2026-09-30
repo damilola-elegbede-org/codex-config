@@ -7,4 +7,5 @@ approval_policy = "never"
 sandbox_mode = "danger-full-access"
 
 [tui]
-status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"]
+status_line = ["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "weekly-limit", "five-hour-limit", "task-progress"]
+status_line_use_colors = true
