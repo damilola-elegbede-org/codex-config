@@ -70,6 +70,24 @@ assert config["sandbox_mode"] == "workspace-write"
 assert config["tui"]["status_line"] == ["old-status"]
 PY
 
+mkdir -p "$WORK/empty-station-auto"
+cp "$LIVE/config.toml" "$WORK/empty-station-auto/config.toml"
+PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/empty-station-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION="" "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/empty-station-auto.out"
+python3 - "$WORK/empty-station-auto/config.toml" <<'PY'
+import sys
+import tomllib
+
+with open(sys.argv[1], "rb") as source:
+    config = tomllib.load(source)
+assert config["model"] == "new"
+assert config["model_reasoning_effort"] == "high"
+assert config["web_search"] == "live"
+assert config["approval_policy"] == "on-request"
+assert config["sandbox_mode"] == "workspace-write"
+assert config["tui"]["status_line"] == ["old-status"]
+PY
+
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/sync.out"
 grep -q 'model = "new"' "$LIVE/config.toml"
