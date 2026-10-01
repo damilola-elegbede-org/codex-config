@@ -82,17 +82,17 @@ Preview the changes before applying, including on the Mini:
 scripts/sync.sh --dry-run
 ```
 
-Review the diff and staged validation, then apply manually:
-
-```sh
-scripts/sync.sh
-```
-
 On the Mini, run the fleet review smoke from the BareClaude checkout before
 applying (replace the path with your current codex-config checkout):
 
 ```sh
 infra/scripts/codex-review.sh --base origin/main --repo-root /path/to/codex-config
+```
+
+Review the diff and staged validation, then apply manually:
+
+```sh
+scripts/sync.sh
 ```
 
 The Mini Codex home is a fleet surface. Do not use this repository to change
