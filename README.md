@@ -25,9 +25,10 @@ It also owns the file profiles that it ships (`think.config.toml`,
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
-These approval, sandbox, and TUI defaults apply only when the laptop-default
-ownership list is in use. The checked-in Mac Mini manifest remains scoped to
-model settings and profiles, so it does not receive them.
+The checked-in Mac Mini manifest syncs all of these settings and profiles,
+including the native status line and full-access defaults (`approval_policy =
+"never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
+also apply to fleet processes that do not supply higher-priority overrides.
 
 ## Never touched
 
@@ -68,23 +69,29 @@ that backup; `--force` bypasses the local `origin/main` freshness comparison.
 Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
 laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
 for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
-auto-detected host instead receives the restricted Mini-equivalent key set
-(`model`, `model_reasoning_effort`, and `web_search`). The checked-in Mini
-manifest intentionally enables only those model keys and profiles.
+auto-detected host instead receives the restricted key set (`model`,
+`model_reasoning_effort`, and `web_search`). The checked-in Mini manifest
+explicitly enables all repository-owned settings and profiles.
 
 ## Rollout
 
-Roll out on a laptop first. On the Mini, preview only:
+Preview the changes before applying, including on the Mini:
 
 ```sh
 scripts/sync.sh --dry-run
 ```
 
-After the resulting diff and staged validator are reviewed, schedule a normal
-apply in a maintenance window and smoke the fleet gate:
+Review the diff and staged validation, then apply manually:
 
 ```sh
-infra/scripts/codex-review.sh
+scripts/sync.sh
+```
+
+On the Mini, run the fleet review smoke from the BareClaude checkout before
+applying (replace the path with your current codex-config checkout):
+
+```sh
+infra/scripts/codex-review.sh --base origin/main --repo-root /path/to/codex-config
 ```
 
 The Mini Codex home is a fleet surface. Do not use this repository to change

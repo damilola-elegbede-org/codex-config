@@ -1,0 +1,11 @@
+--- a/sync-manifests/damilola-mbm.json
++++ b/sync-manifests/damilola-mbm.json
+@@ -15,7 +15,6 @@
+       "web_search",
+       "approval_policy",
+-      "sandbox_mode",
+-      "tui"
++      "sandbox_mode"
+     ]
+   }
+ }

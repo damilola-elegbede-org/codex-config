@@ -1,5 +1,5 @@
 {
-  "_comment": "Mac Mini fleet node. Keep the fleet-visible global surfaces off until their impact passes are separately approved.",
+  "_comment": "Mac Mini fleet node. Sync all repository-owned configuration and profiles; preserve machine-local state.",
   "mode": "scoped",
   "sync": {
     "profiles": true,
@@ -11,7 +11,10 @@
     "config_owned_keys": [
       "model",
       "model_reasoning_effort",
-      "web_search"
+      "web_search",
+      "approval_policy",
+      "sandbox_mode",
+      "tui"
     ]
   }
 }

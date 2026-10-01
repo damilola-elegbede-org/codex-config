@@ -169,9 +169,9 @@ printf '%s\n' \
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/mini" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=damilola-mbm "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/mini.out"
 grep -q 'model = "newer"' "$WORK/mini/config.toml"
-grep -q 'approval_policy = "on-request"' "$WORK/mini/config.toml"
-grep -q 'sandbox_mode = "workspace-write"' "$WORK/mini/config.toml"
-grep -q 'status_line = \["mini-status"\]' "$WORK/mini/config.toml"
+grep -q 'approval_policy = "never"' "$WORK/mini/config.toml"
+grep -q 'sandbox_mode = "danger-full-access"' "$WORK/mini/config.toml"
+grep -q 'status_line = \["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"\]' "$WORK/mini/config.toml"
 
 mkdir -p "$WORK/alternate-header"
 printf '%s\n' \
