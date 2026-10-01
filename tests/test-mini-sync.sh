@@ -47,9 +47,6 @@ for profile in source.glob("*.config.toml"):
     assert (target / profile.name).read_bytes() == profile.read_bytes(), profile.name
 for theme in (source / "themes").glob("*.tmTheme"):
     assert (target / "themes" / theme.name).read_bytes() == theme.read_bytes(), theme.name
-for relative in ("statusline/statusline.py", "statusline/statusline.sh", "statusline/preview.py",
-                 "themes/README.md", "themes/monokai-LICENSE.txt"):
-    assert (target / relative).read_bytes() == (source / relative).read_bytes(), relative
 assert (target / "AGENTS.md").read_bytes() == (source / "AGENTS.md").read_bytes()
 assert (target / "custom.config.toml").read_text() == 'model = "custom"\n'
 assert (target / "auth.json").read_text() == 'test-auth-state\n'

@@ -2,7 +2,7 @@
 
 Adapted from `claude-config/system-configs/.claude/output-styles/executive.md`
 at `c24b5f03e621732e35fc2a8a3758c7925a919833`. This is the only configured
-response style. The separate `executive.tmTheme` controls visual colors.
+response style. Visual colors are controlled separately by the native TUI theme.
 
 Brief D as an executive who decides from what you write: short, complete,
 conclusion first, with the next move obvious. Keep Codex's coding instructions

@@ -5,8 +5,6 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 SOURCE_CODEX=${CODEX_CONFIG_SOURCE:-"$ROOT/system-configs/.codex"}
 TARGET_CODEX=${CODEX_HOME:-"$HOME/.codex"}
-# Explicit owned files: never copy runtime caches or arbitrary helper directories.
-COMPANION_FILES="statusline/statusline.py statusline/statusline.sh statusline/preview.py themes/monokai-LICENSE.txt themes/README.md"
 DRY_RUN=false
 CREATE_BACKUP=true
 FORCE=false
@@ -134,18 +132,11 @@ PY
     stage_file "$source" "themes/$(basename "$source")"
 done
 
-for relative in $COMPANION_FILES; do
-    stage_file "$SOURCE_CODEX/$relative" "$relative"
-    [ -f "$STAGE/$relative" ] || continue
-    case "$relative" in
-        *.py) if ! python3 -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())' "$STAGE/$relative"; then
-            echo "invalid statusline Python; live configuration was not changed" >&2; exit 2
-        fi ;;
-        *.sh) if ! sh -n "$STAGE/$relative"; then
-            echo "invalid statusline shell; live configuration was not changed" >&2; exit 2
-        fi ;;
-    esac
-done
+
+# Retire only byte-identical copies of the withdrawn companion and theme. The planner
+# preserves customized files and any saved preview needing manual restoration.
+RETIRED_LIST="$STAGE/.retired-config"
+python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" > "$RETIRED_LIST"
 
 if ! "$ROOT/scripts/validate.sh" "$STAGE"; then
     echo "staging validation failed; live configuration was not changed" >&2
@@ -177,17 +168,10 @@ print_diff() {
             echo "would install theme: $name"
         fi
     done
-    for relative in $COMPANION_FILES; do
-        [ -f "$STAGE/$relative" ] || continue
-        if [ -f "$TARGET_CODEX/$relative" ]; then
-            diff -u "$TARGET_CODEX/$relative" "$STAGE/$relative" || true
-        else
-            echo "would install companion file: $relative"
-        fi
-    done
     if [ -s "$STALE_LIST" ]; then
         while IFS= read -r stale; do echo "would remove stale profile: $stale"; done < "$STALE_LIST"
     fi
+    while IFS= read -r retired; do echo "would remove retired config: $retired"; done < "$RETIRED_LIST"
     echo "backup would be created: $HOME/.codex-config.backup.<timestamp>"
 }
 if [ "$DRY_RUN" = true ]; then
@@ -207,9 +191,7 @@ if [ "$CREATE_BACKUP" = true ]; then
         cp "$TARGET_CODEX/$relative" "$BACKUP/$relative"
     }
     backup_file config.toml
-    for relative in $COMPANION_FILES; do
-        [ ! -f "$STAGE/$relative" ] || backup_file "$relative"
-    done
+    while IFS= read -r retired; do backup_file "$retired"; done < "$RETIRED_LIST"
     for staged in "$STAGE"/themes/*.tmTheme; do
         [ -e "$staged" ] && backup_file "themes/$(basename "$staged")"
     done
@@ -240,9 +222,6 @@ for staged in "$STAGE"/themes/*.tmTheme; do
     [ -e "$staged" ] || continue
     install_checked "themes/$(basename "$staged")"
 done
-for relative in $COMPANION_FILES; do
-    [ ! -f "$STAGE/$relative" ] || install_checked "$relative"
-done
 install_checked config.toml
 for staged in "$STAGE"/*.config.toml; do
     [ -e "$staged" ] || continue
@@ -260,6 +239,10 @@ fi
 if ! "$ROOT/scripts/validate.sh" "$TARGET_CODEX"; then
     echo "post-install validation failed; backup: ${BACKUP:-none}" >&2
     exit 3
+fi
+# Recheck hashes and preview state before removal; a concurrent user edit wins.
+if [ -s "$RETIRED_LIST" ]; then
+    python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" --remove
 fi
 if [ -n "$BACKUP" ]; then
     find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]' -print |

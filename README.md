@@ -16,60 +16,28 @@ profiles; it does not ship a persona dispatcher or
 - `sandbox_mode` (`"danger-full-access"`)
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
-model/reasoning, Git branch, current directory, Codex version, and context used.
-The `executive` theme is an unmodified copy of the exact **Monokai Extended
-Origin** bundled with Codex 0.159.2. Its provenance and license are shipped in
-`themes/`. This controls code and diff highlighting; select `/theme` → `executive`
-in an existing client or restart/resume to reload it.
+model/reasoning, Git branch, current directory, Codex version, context remaining,
+weekly quota remaining, and five-hour quota remaining.
+Codex uses its built-in **Monokai Extended Origin** theme
+(`tui.theme = "monokai-extended-origin"`). No custom Executive theme is shipped.
+This setting controls code/diff highlighting and native status-line colors;
+Executive response formatting is configured separately in `AGENTS.md`.
 
-The separate Claude-style companion footer supplies fields the native footer
-cannot: fixed session colors, independently colored labels and numbers, weekly
-**used**, Executive style, five-segment bars, and a weekly burn index. It appears
-as an additional **tmux status row**, not a native Codex callback. Codex 0.159.2
-has no custom-script field; its native footer remains available outside tmux.
+The status line is **native Codex only**. This repository does not install or
+modify tmux status rows. In Codex 0.159.2, native items cannot run a shell script
+or render arbitrary custom fields. Context and both quota windows consistently show the percentage remaining.
+Quota fields appear only when Codex receives the corresponding window; accounts
+without a five-hour window will not display a fabricated value.
+There is no native output-style label, burn index, or five-segment usage bar.
 
-After sync, activate or restore the preview in a chosen tmux session:
+Sync backs up and retires unchanged files from the withdrawn tmux
+companion and custom Executive theme. Customized files or saved preview state are preserved so an existing
+preview can still be restored manually. Sync never changes tmux settings.
 
-```sh
-python3 -B ~/.codex/statusline/preview.py install --pane "$TMUX_PANE"
-python3 -B ~/.codex/statusline/preview.py restore --pane "$TMUX_PANE"
-```
-
-Use the pane ID from `tmux list-panes -a` when invoking from an agent process:
-its inherited `TMUX_PANE` may refer to another terminal. Installation preserves
-existing status rows, affects only that tmux session, and is idempotent. Sync
-updates the renderer without automatically changing other terminal sessions.
-No tmux configuration file or shell profile is modified. Dependencies: Python
-3.11+, Git, and tmux (tested with 3.6a). The wrapper supports Homebrew Python.
-
-The companion order is session (pastel purple), model (red), branch (orange),
-folder (pale blue), Executive (yellow), running version (bright terminal green),
-Context and weekly Usage (gray labels, green numbers), then Burn. Context and
-usage remain green as requested; burn changes blue/green/yellow/orange/red.
-Bars appear at pane widths of at least 175 columns. Very narrow terminals may
-clip the rightmost fields. A detached Git HEAD displays its short commit;
-non-repositories display `no-git`.
-
-Telemetry comes from the selected conversation's local `session_index.jsonl`
-and incremental reads of its rollout, never credentials or a network scraper.
-The latest turn supplies model/cwd; context uses Codex's 12,000-token baseline
-and latest-turn tokens, not cumulative session tokens. Weekly usage selects
-Codex's reported 10,080-minute window from either primary or secondary limits.
-The version is read from the native footer, since resumed-session metadata may
-name a different client. Unavailable or ambiguous values show `--`.
-
-Burn = quota fraction used / fraction of the reported week elapsed. It calculates as soon as elapsed time is positive (no borrowed Claude warmup),
-shows the uncapped ratio, rounds to one decimal before assigning color, and uses boundaries 0.5 / 1.1 / 1.3 / 1.5. A value of 1.0x
-means consumption matches the week's elapsed fraction. Quota snapshots older
-than 15 minutes show their age and suppress burn; snapshots past reset show
-`--` rather than invented new-week usage. Quota values update when Codex emits
-telemetry, so they are last observed values, not continuous account polling.
-Claude-only credit budgets, Fable quotas, and fabricated token-to-dollar costs
-are not displayed. There is no version-upgrade sparkle yet.
-
-Source reference: Claude `statusline.sh` at commit
-`c24b5f03e621732e35fc2a8a3758c7925a919833`. The renderer copies its progress bars,
-quota pacing, rounding, and thresholds, with D's fixed field colors.
+Native footer colors come from the syntax theme. Session colors vary by thread
+ID; model, branch, path, usage, and version use theme scopes. Independent fixed
+field colors, separately colored labels and values, and usage-pressure color
+thresholds are not configurable in this release. Selecting Monokai Extended Origin uses its native footer palette.
 
 The theme is a visual palette. Separately, `system-configs/.codex/AGENTS.md`
 installs the Executive response style as global Codex instructions: tagged
