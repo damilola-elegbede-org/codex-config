@@ -2,7 +2,7 @@
 
 This public repository is the source of truth for the small, explicit portion
 of a Codex home that it owns. It uses native Codex configuration and file-based
-profiles; it does not ship a persona dispatcher, custom prompts, or
+profiles; it does not ship a persona dispatcher or
 `[profiles.*]` tables.
 
 ## Owned configuration
@@ -16,13 +16,13 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `sandbox_mode` (`"danger-full-access"`)
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
-model/reasoning, Git branch, current directory, context remaining, Codex version,
-context usage, weekly and five-hour remaining quotas, and task progress.
+model/reasoning, Git branch, current directory, Codex version, and context used.
+Weekly used is not available as a native field in Codex 0.159.2, so it is omitted.
 Native theme-derived colors are enabled. The line
 uses only Codex-native items; it does not execute the Claude shell script or
 access Claude usage data.
 The `executive` custom theme makes the model red, Git branch orange, directory
-teal, and context/version/limits green. Sync installs shipped `themes/*.tmTheme`
+teal, and context/version green. Sync installs shipped `themes/*.tmTheme`
 files, backing up matching files and preserving unrelated user themes.
 Use `/theme` and select `executive` to preview it in an existing session;
 restart/resume Codex to load the complete updated status-line order.
@@ -31,14 +31,19 @@ Themes also affect code-block and diff highlighting. In Codex 0.159.2, session
 colors are assigned by thread ID from the theme palette, project and directory
 share a color, and pressure thresholds cannot change footer colors through config.
 There is no native `no git` fallback or arbitrary output-style label.
-The theme is a visual palette; it does not install Executive writing instructions.
+The theme is a visual palette. Separately, `system-configs/.codex/AGENTS.md`
+installs the Executive response style as global Codex instructions: tagged
+openings (`FYI`, `DECISION`, `APPROVAL`, `INPUT`, `ACTION`), action metadata when
+needed, concise sourced evidence, and a closing `Next` line. Required review
+schemas, exact-output tasks, and automation protocols keep their prescribed format.
+This style supplements Codex's coding instructions; it does not replace them.
 It also owns the file profiles that it ships (`think.config.toml`,
 `code.config.toml`, and `review.config.toml`). The profile values mirror the
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
 The checked-in Mac Mini manifest has an empty override set (`"sync": {}`),
-so it inherits all repository-owned settings and profiles,
+so it inherits all repository-owned settings, profiles, and global instructions,
 including the native status line and full-access defaults (`approval_policy =
 "never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
 also apply to fleet processes that do not supply higher-priority overrides.
@@ -83,7 +88,11 @@ Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
 laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
 for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
 auto-detected host instead receives the restricted key set (`model`,
-`model_reasoning_effort`, and `web_search`). The checked-in Mini manifest
+`model_reasoning_effort`, and `web_search`) without global `AGENTS.md`.
+Recognized or explicitly selected stations install the shipped `AGENTS.md` by
+default. A manifest's `agents_md: false` skips future instruction updates;
+it does not remove an already installed `AGENTS.md` or disable its behavior.
+The checked-in Mini manifest
 has no exceptions: it inherits all repository-owned settings and profiles.
 
 ## Rollout
@@ -107,9 +116,11 @@ Review the diff and staged validation, then apply manually:
 scripts/sync.sh
 ```
 
-The Mini Codex home is a fleet surface. Do not use this repository to change
-global instructions, hooks, rules, or user skills there until their impact
-reviews explicitly enable them.
+The Mini Codex home is a fleet surface. Executive formatting applies to
+human-facing prose, including other processes using this home; it explicitly
+defers to machine-readable and review output contracts. Hooks, rules, and user
+skills remain outside this rollout. Global instructions load at session startup;
+restart/resume existing sessions after sync to load them and the status-line order.
 
 ## Tests
 

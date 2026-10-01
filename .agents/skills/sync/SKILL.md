@@ -25,7 +25,9 @@ What it owns: the repository-default or manifest-listed top-level keys of
 and the native status line. Shipped `themes/*.tmTheme` files are also staged,
 validated, backed up, and installed; unrelated user themes are preserved.
 The Mini manifest has no overrides, so it inherits
-the complete default ownership list. What it never touches: `[projects.*]`,
+the complete default ownership list, including global `AGENTS.md` with the
+Executive response style. Unknown auto-detected hosts do not receive global
+instructions. What it never touches: `[projects.*]`,
 `[notice.model_migrations]`, nested `[tui.*]` state, `auth.json`, `sessions/`,
 `history.jsonl`, sqlite, `cache/`, `log/`, `plugins/`, `skills/.system`,
 `rules/default.rules`, user skills. On a fleet node (Mac Mini) run

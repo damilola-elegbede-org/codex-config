@@ -50,6 +50,8 @@ printf '%s\n' 'model = "unknown"' > "$LIVE/custom.config.toml"
 printf '%s\n' 'secret' > "$LIVE/auth.json"
 mkdir -p "$LIVE/sessions"
 printf '%s\n' 'state' > "$LIVE/sessions/x"
+printf '%s\n' 'Executive response instructions' > "$SOURCE/AGENTS.md"
+printf '%s\n' 'Previous global instructions' > "$LIVE/AGENTS.md"
 mkdir -p "$SOURCE/themes" "$LIVE/themes"
 cp "$ROOT/system-configs/.codex/themes/executive.tmTheme" "$SOURCE/themes/executive.tmTheme"
 printf '%s\n' 'old theme' > "$LIVE/themes/executive.tmTheme"
@@ -60,6 +62,7 @@ cp "$LIVE/config.toml" "$WORK/generic-auto/config.toml"
 unset CODEX_CONFIG_STATION
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/generic-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
   "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/generic-auto.out"
+[ ! -e "$WORK/generic-auto/AGENTS.md" ]
 python3 - "$WORK/generic-auto/config.toml" <<'PY'
 import sys
 import tomllib
@@ -124,6 +127,8 @@ backup=$(find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.*' -print 
 [ -f "$backup/config.toml" ]
 [ ! -e "$backup/auth.json" ]
 [ ! -e "$backup/sessions" ]
+cmp "$SOURCE/AGENTS.md" "$LIVE/AGENTS.md"
+grep -q '^Previous global instructions$' "$backup/AGENTS.md"
 cmp "$SOURCE/themes/executive.tmTheme" "$LIVE/themes/executive.tmTheme"
 grep -q '^old theme$' "$backup/themes/executive.tmTheme"
 grep -q '^user theme$' "$LIVE/themes/personal.tmTheme"
@@ -131,11 +136,15 @@ grep -q '^user theme$' "$LIVE/themes/personal.tmTheme"
 
 before=$(cksum "$LIVE/config.toml")
 theme_before=$(cksum "$LIVE/themes/executive.tmTheme")
+agents_before=$(cksum "$LIVE/AGENTS.md")
+printf '%s\n' 'Updated Executive response instructions' > "$SOURCE/AGENTS.md"
 cp "$SOURCE/themes/executive.tmTheme" "$SOURCE/themes/new-preview.tmTheme"
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --dry-run >"$WORK/dry.out"
 after=$(cksum "$LIVE/config.toml")
 [ "$before" = "$after" ]
+[ "$agents_before" = "$(cksum "$LIVE/AGENTS.md")" ]
+grep -q '+Updated Executive response instructions' "$WORK/dry.out"
 [ "$theme_before" = "$(cksum "$LIVE/themes/executive.tmTheme")" ]
 [ ! -e "$LIVE/themes/new-preview.tmTheme" ]
 grep -q 'would install theme: themes/new-preview.tmTheme' "$WORK/dry.out"

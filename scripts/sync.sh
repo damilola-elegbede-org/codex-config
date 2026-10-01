@@ -54,11 +54,13 @@ ALL_OWNED_KEYS="model model_reasoning_effort web_search approval_policy sandbox_
 SAFE_OWNED_KEYS="model model_reasoning_effort web_search"
 if [ -f "$MANIFEST" ] || [ "$EXPLICIT_STATION" = true ]; then
     OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
+    DEFAULT_AGENTS_MD=true
 else
     OWNED_KEYS=$SAFE_OWNED_KEYS
+    DEFAULT_AGENTS_MD=false
 fi
 PROFILES=$(manifest_value profiles true)
-AGENTS_MD=$(manifest_value agents_md false)
+AGENTS_MD=$(manifest_value agents_md "$DEFAULT_AGENTS_MD")
 RULES=$(manifest_value rules false)
 HOOKS=$(manifest_value hooks false)
 case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac
@@ -139,6 +141,13 @@ print_diff() {
     echo "manifest: ${MANIFEST#$ROOT/}"
     echo "config: merge ($OWNED_KEYS)"
     diff -u "$TARGET_CODEX/config.toml" "$STAGE/config.toml" 2>/dev/null || true
+    if [ -f "$STAGE/AGENTS.md" ]; then
+        if [ -f "$TARGET_CODEX/AGENTS.md" ]; then
+            diff -u "$TARGET_CODEX/AGENTS.md" "$STAGE/AGENTS.md" || true
+        else
+            diff -u /dev/null "$STAGE/AGENTS.md" || true
+        fi
+    fi
     for staged in "$STAGE"/*.config.toml; do
         [ -e "$staged" ] || continue
         name=$(basename "$staged")

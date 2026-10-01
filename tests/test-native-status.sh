@@ -9,11 +9,10 @@ import tomllib
 with open(sys.argv[1], "rb") as source:
     config = tomllib.load(source)
 
-# Shared Claude fields keep their relative order; tasks extend the native line.
+# Keep identity fields and the version immediately before context used.
 assert config["tui"]["status_line"] == [
     "thread-name", "model-with-reasoning", "git-branch", "current-dir",
-    "context-remaining", "codex-version", "context-used", "weekly-limit",
-    "five-hour-limit", "task-progress",
+    "codex-version", "context-used",
 ]
 assert config["tui"]["status_line_use_colors"] is True
 assert config["tui"]["theme"] == "executive"
