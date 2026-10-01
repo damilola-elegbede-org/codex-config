@@ -25,7 +25,8 @@ It also owns the file profiles that it ships (`think.config.toml`,
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
-The checked-in Mac Mini manifest syncs all of these settings and profiles,
+The checked-in Mac Mini manifest has an empty override set (`"sync": {}`),
+so it inherits all repository-owned settings and profiles,
 including the native status line and full-access defaults (`approval_policy =
 "never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
 also apply to fleet processes that do not supply higher-priority overrides.
@@ -71,7 +72,7 @@ laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
 for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
 auto-detected host instead receives the restricted key set (`model`,
 `model_reasoning_effort`, and `web_search`). The checked-in Mini manifest
-explicitly enables all repository-owned settings and profiles.
+has no exceptions: it inherits all repository-owned settings and profiles.
 
 ## Rollout
 

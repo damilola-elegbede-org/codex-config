@@ -17,11 +17,13 @@ nothing), `--no-backup`, `--force`. Exit codes: 0 synced · 1 pre-flight ·
 2 validation failed (live untouched) · 3 install or post-validate failed
 (backup path printed).
 
-What it owns: the manifest-listed top-level keys of `config.toml`
+What it owns: the repository-default or manifest-listed top-level keys of
+`config.toml`
 (`model`, `model_reasoning_effort`, `web_search`, `approval_policy`,
 `sandbox_mode`, and the root `[tui]` table on the Mini) and the profile files
 `think|code|review.config.toml`. This includes full-access permission defaults
-and the native status line. What it never touches: `[projects.*]`,
+and the native status line. The Mini manifest has no overrides, so it inherits
+the complete default ownership list. What it never touches: `[projects.*]`,
 `[notice.model_migrations]`, nested `[tui.*]` state, `auth.json`, `sessions/`,
 `history.jsonl`, sqlite, `cache/`, `log/`, `plugins/`, `skills/.system`,
 `rules/default.rules`, user skills. On a fleet node (Mac Mini) run

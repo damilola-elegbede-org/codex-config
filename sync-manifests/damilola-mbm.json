@@ -1,20 +1,3 @@
 {
-  "_comment": "Mac Mini fleet node. Sync all repository-owned configuration and profiles; preserve machine-local state.",
-  "mode": "scoped",
-  "sync": {
-    "profiles": true,
-    "agents_md": false,
-    "rules": false,
-    "hooks": false,
-    "skills": false,
-    "config": "merge",
-    "config_owned_keys": [
-      "model",
-      "model_reasoning_effort",
-      "web_search",
-      "approval_policy",
-      "sandbox_mode",
-      "tui"
-    ]
-  }
+  "sync": {}
 }
