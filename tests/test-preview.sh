@@ -17,7 +17,7 @@ before_row=$(tmux show-options -Av -t preview 'status-format[0]')
 preview install
 [ "$(tmux show-options -v -t preview status)" = 2 ]
 [ "$(tmux show-options -v -t preview 'status-format[0]')" = "$before_row" ]
-tmux show-options -v -t preview 'status-format[1]' | rg -q 'statusline.sh'
+tmux show-options -v -t preview 'status-format[1]' | grep -q 'statusline.sh'
 preview install
 [ "$(tmux show-options -v -t preview status)" = 2 ]
 preview restore
