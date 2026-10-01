@@ -104,6 +104,31 @@ fi
 [ "$AGENTS_MD" = true ] && stage_file "$SOURCE_CODEX/AGENTS.md" AGENTS.md || true
 [ "$HOOKS" = true ] && stage_file "$SOURCE_CODEX/hooks.json" hooks.json || true
 [ "$RULES" = true ] && stage_file "$SOURCE_CODEX/rules/codex-config.rules" rules/codex-config.rules || true
+# Ship only repository theme files; never replace the user's themes directory.
+for source in "$SOURCE_CODEX"/themes/*.tmTheme; do
+    [ -e "$source" ] || continue
+    if ! python3 - "$source" <<'PY'
+import plistlib, sys
+try:
+    with open(sys.argv[1], "rb") as source:
+        theme = plistlib.load(source)
+    if not isinstance(theme, dict) or not isinstance(theme.get("settings"), list) or not theme["settings"]:
+        raise ValueError("theme must contain a nonempty settings array with global settings first")
+    for rule in theme["settings"]:
+        if not isinstance(rule, dict) or not isinstance(rule.get("settings"), dict):
+            raise ValueError("theme rules must contain a settings dictionary")
+    if "scope" in theme["settings"][0]:
+        raise ValueError("first theme entry must define global settings, without a scope")
+except Exception as error:
+    print(f"{sys.argv[1]}: invalid theme: {error}", file=sys.stderr)
+    raise SystemExit(1)
+PY
+    then
+        echo "staging validation failed; live configuration was not changed" >&2
+        exit 2
+    fi
+    stage_file "$source" "themes/$(basename "$source")"
+done
 
 if ! "$ROOT/scripts/validate.sh" "$STAGE"; then
     echo "staging validation failed; live configuration was not changed" >&2
@@ -118,6 +143,15 @@ print_diff() {
         [ -e "$staged" ] || continue
         name=$(basename "$staged")
         diff -u "$TARGET_CODEX/$name" "$staged" 2>/dev/null || true
+    done
+    for staged in "$STAGE"/themes/*.tmTheme; do
+        [ -e "$staged" ] || continue
+        name="themes/$(basename "$staged")"
+        if [ -f "$TARGET_CODEX/$name" ]; then
+            diff -u "$TARGET_CODEX/$name" "$staged" || true
+        else
+            echo "would install theme: $name"
+        fi
     done
     if [ -s "$STALE_LIST" ]; then
         while IFS= read -r stale; do echo "would remove stale profile: $stale"; done < "$STALE_LIST"
@@ -141,6 +175,9 @@ if [ "$CREATE_BACKUP" = true ]; then
         cp "$TARGET_CODEX/$relative" "$BACKUP/$relative"
     }
     backup_file config.toml
+    for staged in "$STAGE"/themes/*.tmTheme; do
+        [ -e "$staged" ] && backup_file "themes/$(basename "$staged")"
+    done
     for staged in "$STAGE"/*.config.toml; do [ -e "$staged" ] && backup_file "$(basename "$staged")"; done
     if [ -s "$STALE_LIST" ]; then
         while IFS= read -r stale; do backup_file "$stale"; done < "$STALE_LIST"
@@ -163,6 +200,11 @@ install_checked() {
         exit 3
     fi
 }
+# Install the theme before publishing the config that selects it.
+for staged in "$STAGE"/themes/*.tmTheme; do
+    [ -e "$staged" ] || continue
+    install_checked "themes/$(basename "$staged")"
+done
 install_checked config.toml
 for staged in "$STAGE"/*.config.toml; do
     [ -e "$staged" ] || continue

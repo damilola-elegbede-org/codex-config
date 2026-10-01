@@ -22,7 +22,9 @@ What it owns: the repository-default or manifest-listed top-level keys of
 (`model`, `model_reasoning_effort`, `web_search`, `approval_policy`,
 `sandbox_mode`, and the root `[tui]` table on the Mini) and the profile files
 `think|code|review.config.toml`. This includes full-access permission defaults
-and the native status line. The Mini manifest has no overrides, so it inherits
+and the native status line. Shipped `themes/*.tmTheme` files are also staged,
+validated, backed up, and installed; unrelated user themes are preserved.
+The Mini manifest has no overrides, so it inherits
 the complete default ownership list. What it never touches: `[projects.*]`,
 `[notice.model_migrations]`, nested `[tui.*]` state, `auth.json`, `sessions/`,
 `history.jsonl`, sqlite, `cache/`, `log/`, `plugins/`, `skills/.system`,

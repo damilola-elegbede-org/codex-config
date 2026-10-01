@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>name</key>
+	<string>Executive</string>
+	<key>settings</key>
+	<array>
+		<dict>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#D8DEE9</string>
+				<key>background</key>
+				<string>#1E222A</string>
+				<key>caret</key>
+				<string>#D8DEE9</string>
+				<key>selection</key>
+				<string>#394451</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Types and model</string>
+			<key>scope</key>
+			<string>entity.name.type, support.type, support.class, variable</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#F07178</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Strings and paths</string>
+			<key>scope</key>
+			<string>string, markup.underline.link</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#56C8D8</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Functions and branches</string>
+			<key>scope</key>
+			<string>entity.name.function, entity.name.tag</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#F4A261</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Numbers and usage</string>
+			<key>scope</key>
+			<string>constant.numeric, constant</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#98D89E</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Language constants and limits</string>
+			<key>scope</key>
+			<string>constant.language, storage.type</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#98D89E</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Comments and version</string>
+			<key>scope</key>
+			<string>comment, constant.other</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#98D89E</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Keywords and modes</string>
+			<key>scope</key>
+			<string>keyword, storage.modifier</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#C9B1FF</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Headings</string>
+			<key>scope</key>
+			<string>markup.heading, entity.name.section</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#C9B1FF</string>
+				<key>fontStyle</key>
+				<string>bold</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Inserted lines and progress</string>
+			<key>scope</key>
+			<string>markup.inserted, diff.inserted</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#98D89E</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Deleted lines</string>
+			<key>scope</key>
+			<string>markup.deleted, diff.deleted</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#F07178</string>
+			</dict>
+		</dict>
+		<dict>
+			<key>name</key>
+			<string>Changed lines</string>
+			<key>scope</key>
+			<string>markup.changed, diff.changed</string>
+			<key>settings</key>
+			<dict>
+				<key>foreground</key>
+				<string>#F4A261</string>
+			</dict>
+		</dict>
+	</array>
+</dict>
+</plist>

@@ -45,6 +45,8 @@ assert actual["notice"]["model_migrations"] == {"old": "new"}
 assert actual["tui"]["model_availability_nux"] == {"old": 1}
 for profile in source.glob("*.config.toml"):
     assert (target / profile.name).read_bytes() == profile.read_bytes(), profile.name
+for theme in (source / "themes").glob("*.tmTheme"):
+    assert (target / "themes" / theme.name).read_bytes() == theme.read_bytes(), theme.name
 assert (target / "custom.config.toml").read_text() == 'model = "custom"\n'
 assert (target / "auth.json").read_text() == 'test-auth-state\n'
 print("PASS: detected Mini syncs all shipped settings and profiles, preserving local state")

@@ -16,10 +16,22 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `sandbox_mode` (`"danger-full-access"`)
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
-model/reasoning, Git branch, current directory, context usage, weekly and five-hour
-remaining quotas, and task progress. Native theme-derived colors are enabled. The line
+model/reasoning, Git branch, current directory, context remaining, Codex version,
+context usage, weekly and five-hour remaining quotas, and task progress.
+Native theme-derived colors are enabled. The line
 uses only Codex-native items; it does not execute the Claude shell script or
 access Claude usage data.
+The `executive` custom theme makes the model red, Git branch orange, directory
+teal, and context/version/limits green. Sync installs shipped `themes/*.tmTheme`
+files, backing up matching files and preserving unrelated user themes.
+Use `/theme` and select `executive` to preview it in an existing session;
+restart/resume Codex to load the complete updated status-line order.
+
+Themes also affect code-block and diff highlighting. In Codex 0.159.2, session
+colors are assigned by thread ID from the theme palette, project and directory
+share a color, and pressure thresholds cannot change footer colors through config.
+There is no native `no git` fallback or arbitrary output-style label.
+The theme is a visual palette; it does not install Executive writing instructions.
 It also owns the file profiles that it ships (`think.config.toml`,
 `code.config.toml`, and `review.config.toml`). The profile values mirror the
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
