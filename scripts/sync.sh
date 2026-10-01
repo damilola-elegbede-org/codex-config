@@ -5,6 +5,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 SOURCE_CODEX=${CODEX_CONFIG_SOURCE:-"$ROOT/system-configs/.codex"}
 TARGET_CODEX=${CODEX_HOME:-"$HOME/.codex"}
+# Explicit owned files: never copy runtime caches or arbitrary helper directories.
+COMPANION_FILES="statusline/statusline.py statusline/statusline.sh statusline/preview.py themes/monokai-LICENSE.txt themes/README.md"
 DRY_RUN=false
 CREATE_BACKUP=true
 FORCE=false
@@ -132,6 +134,19 @@ PY
     stage_file "$source" "themes/$(basename "$source")"
 done
 
+for relative in $COMPANION_FILES; do
+    stage_file "$SOURCE_CODEX/$relative" "$relative"
+    [ -f "$STAGE/$relative" ] || continue
+    case "$relative" in
+        *.py) if ! python3 -c 'import ast,sys; ast.parse(open(sys.argv[1]).read())' "$STAGE/$relative"; then
+            echo "invalid statusline Python; live configuration was not changed" >&2; exit 2
+        fi ;;
+        *.sh) if ! sh -n "$STAGE/$relative"; then
+            echo "invalid statusline shell; live configuration was not changed" >&2; exit 2
+        fi ;;
+    esac
+done
+
 if ! "$ROOT/scripts/validate.sh" "$STAGE"; then
     echo "staging validation failed; live configuration was not changed" >&2
     exit 2
@@ -162,6 +177,14 @@ print_diff() {
             echo "would install theme: $name"
         fi
     done
+    for relative in $COMPANION_FILES; do
+        [ -f "$STAGE/$relative" ] || continue
+        if [ -f "$TARGET_CODEX/$relative" ]; then
+            diff -u "$TARGET_CODEX/$relative" "$STAGE/$relative" || true
+        else
+            echo "would install companion file: $relative"
+        fi
+    done
     if [ -s "$STALE_LIST" ]; then
         while IFS= read -r stale; do echo "would remove stale profile: $stale"; done < "$STALE_LIST"
     fi
@@ -184,6 +207,9 @@ if [ "$CREATE_BACKUP" = true ]; then
         cp "$TARGET_CODEX/$relative" "$BACKUP/$relative"
     }
     backup_file config.toml
+    for relative in $COMPANION_FILES; do
+        [ ! -f "$STAGE/$relative" ] || backup_file "$relative"
+    done
     for staged in "$STAGE"/themes/*.tmTheme; do
         [ -e "$staged" ] && backup_file "themes/$(basename "$staged")"
     done
@@ -213,6 +239,9 @@ install_checked() {
 for staged in "$STAGE"/themes/*.tmTheme; do
     [ -e "$staged" ] || continue
     install_checked "themes/$(basename "$staged")"
+done
+for relative in $COMPANION_FILES; do
+    [ ! -f "$STAGE/$relative" ] || install_checked "$relative"
 done
 install_checked config.toml
 for staged in "$STAGE"/*.config.toml; do

@@ -17,20 +17,60 @@ profiles; it does not ship a persona dispatcher or
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
 model/reasoning, Git branch, current directory, Codex version, and context used.
-Weekly used is not available as a native field in Codex 0.159.2, so it is omitted.
-Native theme-derived colors are enabled. The line
-uses only Codex-native items; it does not execute the Claude shell script or
-access Claude usage data.
-The `executive` custom theme makes the model red, Git branch orange, directory
-teal, and context/version green. Sync installs shipped `themes/*.tmTheme`
-files, backing up matching files and preserving unrelated user themes.
-Use `/theme` and select `executive` to preview it in an existing session;
-restart/resume Codex to load the complete updated status-line order.
+The `executive` theme is an unmodified copy of the exact **Monokai Extended
+Origin** bundled with Codex 0.159.2. Its provenance and license are shipped in
+`themes/`. This controls code and diff highlighting; select `/theme` → `executive`
+in an existing client or restart/resume to reload it.
 
-Themes also affect code-block and diff highlighting. In Codex 0.159.2, session
-colors are assigned by thread ID from the theme palette, project and directory
-share a color, and pressure thresholds cannot change footer colors through config.
-There is no native `no git` fallback or arbitrary output-style label.
+The separate Claude-style companion footer supplies fields the native footer
+cannot: fixed session colors, independently colored labels and numbers, weekly
+**used**, Executive style, five-segment bars, and a weekly burn index. It appears
+as an additional **tmux status row**, not a native Codex callback. Codex 0.159.2
+has no custom-script field; its native footer remains available outside tmux.
+
+After sync, activate or restore the preview in a chosen tmux session:
+
+```sh
+python3 -B ~/.codex/statusline/preview.py install --pane "$TMUX_PANE"
+python3 -B ~/.codex/statusline/preview.py restore --pane "$TMUX_PANE"
+```
+
+Use the pane ID from `tmux list-panes -a` when invoking from an agent process:
+its inherited `TMUX_PANE` may refer to another terminal. Installation preserves
+existing status rows, affects only that tmux session, and is idempotent. Sync
+updates the renderer without automatically changing other terminal sessions.
+No tmux configuration file or shell profile is modified. Dependencies: Python
+3.11+, Git, and tmux (tested with 3.6a). The wrapper supports Homebrew Python.
+
+The companion order is session (pastel purple), model (red), branch (orange),
+folder (pale blue), Executive (yellow), running version (bright terminal green),
+Context and weekly Usage (gray labels, green numbers), then Burn. Context and
+usage remain green as requested; burn changes blue/green/yellow/orange/red.
+Bars appear at pane widths of at least 175 columns. Very narrow terminals may
+clip the rightmost fields. A detached Git HEAD displays its short commit;
+non-repositories display `no-git`.
+
+Telemetry comes from the selected conversation's local `session_index.jsonl`
+and incremental reads of its rollout, never credentials or a network scraper.
+The latest turn supplies model/cwd; context uses Codex's 12,000-token baseline
+and latest-turn tokens, not cumulative session tokens. Weekly usage selects
+Codex's reported 10,080-minute window from either primary or secondary limits.
+The version is read from the native footer, since resumed-session metadata may
+name a different client. Unavailable or ambiguous values show `--`.
+
+Burn = quota fraction used / fraction of the reported week elapsed. It calculates as soon as elapsed time is positive (no borrowed Claude warmup),
+shows the uncapped ratio, rounds to one decimal before assigning color, and uses boundaries 0.5 / 1.1 / 1.3 / 1.5. A value of 1.0x
+means consumption matches the week's elapsed fraction. Quota snapshots older
+than 15 minutes show their age and suppress burn; snapshots past reset show
+`--` rather than invented new-week usage. Quota values update when Codex emits
+telemetry, so they are last observed values, not continuous account polling.
+Claude-only credit budgets, Fable quotas, and fabricated token-to-dollar costs
+are not displayed. There is no version-upgrade sparkle yet.
+
+Source reference: Claude `statusline.sh` at commit
+`c24b5f03e621732e35fc2a8a3758c7925a919833`. The renderer copies its progress bars,
+quota pacing, rounding, and thresholds, with D's fixed field colors.
+
 The theme is a visual palette. Separately, `system-configs/.codex/AGENTS.md`
 installs the Executive response style as global Codex instructions: tagged
 openings (`FYI`, `DECISION`, `APPROVAL`, `INPUT`, `ACTION`), action metadata when

@@ -24,6 +24,10 @@ What it owns: the repository-default or manifest-listed top-level keys of
 `think|code|review.config.toml`. This includes full-access permission defaults
 and the native status line. Shipped `themes/*.tmTheme` files are also staged,
 validated, backed up, and installed; unrelated user themes are preserved.
+The explicit `statusline/` companion helpers and theme attribution files are
+also staged and installed. Sync never activates or changes tmux sessions; use
+`python3 -B ~/.codex/statusline/preview.py install --pane <pane-id>` for a live
+preview, and the same command with `restore` to undo it.
 The Mini manifest has no overrides, so it inherits
 the complete default ownership list, including global `AGENTS.md` with the
 Executive response style. Unknown auto-detected hosts do not receive global
