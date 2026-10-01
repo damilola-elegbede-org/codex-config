@@ -25,7 +25,7 @@ printf '%s\n' 'model = "custom"' > "$WORK/live/custom.config.toml"
 printf '%s\n' 'test-auth-state' > "$WORK/live/auth.json"
 unset CODEX_CONFIG_STATION CODEX_CONFIG_SOURCE
 PATH="$WORK/bin:$PATH" CODEX_HOME="$WORK/live" \
-  "$ROOT/scripts/sync.sh" --no-backup > "$WORK/sync.out"
+  "$ROOT/scripts/sync.sh" --force --no-backup > "$WORK/sync.out"
 python3 - "$ROOT/system-configs/.codex" "$WORK/live" <<'PY'
 import pathlib
 import sys
