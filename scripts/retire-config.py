@@ -16,9 +16,14 @@ SHIPPED = {
 
 
 def candidates(home):
+    """Return unchanged owned files, preserving any linked or customized bundle."""
     result = []
     for group in ('statusline', 'themes'):
-        paths = [name for name in SHIPPED if name.startswith(group + '/') and (home / name).exists()]
+        paths = [
+            name for name in SHIPPED
+            if name.startswith(group + '/')
+            and ((home / name).exists() or (home / name).is_symlink())
+        ]
         if not paths:
             continue
         if group == 'statusline' and any((home / 'statusline-cache').glob('preview-*.json')):
@@ -36,11 +41,19 @@ def candidates(home):
 
 
 def main():
+    """List retirement candidates or remove eligible files from an explicit plan."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('home', type=Path)
     parser.add_argument('--remove', action='store_true')
+    parser.add_argument('--plan', type=Path, help='The original list used for backup; required with --remove')
     args = parser.parse_args()
-    for name in candidates(args.home):
+    if args.remove and args.plan is None:
+        parser.error('--remove requires the original --plan')
+    names = candidates(args.home)
+    if args.plan is not None:
+        planned = set(args.plan.read_text().splitlines())
+        names = [name for name in names if name in planned]
+    for name in names:
         if args.remove:
             (args.home / name).unlink()
             print('removed retired config: ' + name)

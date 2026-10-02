@@ -242,7 +242,7 @@ if ! "$ROOT/scripts/validate.sh" "$TARGET_CODEX"; then
 fi
 # Recheck hashes and preview state before removal; a concurrent user edit wins.
 if [ -s "$RETIRED_LIST" ]; then
-    python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" --remove
+    python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" --remove --plan "$RETIRED_LIST"
 fi
 if [ -n "$BACKUP" ]; then
     find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]' -print |
