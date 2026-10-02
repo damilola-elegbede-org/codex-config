@@ -50,12 +50,23 @@ printf '%s\n' 'model = "unknown"' > "$LIVE/custom.config.toml"
 printf '%s\n' 'secret' > "$LIVE/auth.json"
 mkdir -p "$LIVE/sessions"
 printf '%s\n' 'state' > "$LIVE/sessions/x"
+printf '%s\n' 'Executive response instructions' > "$SOURCE/AGENTS.md"
+printf '%s\n' 'Previous global instructions' > "$LIVE/AGENTS.md"
+mkdir -p "$SOURCE/themes" "$LIVE/themes"
+python3 - "$SOURCE/themes/example.tmTheme" <<'PYTHEME'
+import plistlib, sys
+with open(sys.argv[1], "wb") as out:
+    plistlib.dump({"name": "Example", "settings": [{"settings": {"foreground": "#ABCDEF"}}]}, out)
+PYTHEME
+printf '%s\n' 'old theme' > "$LIVE/themes/example.tmTheme"
+printf '%s\n' 'user theme' > "$LIVE/themes/personal.tmTheme"
 
 mkdir -p "$WORK/generic-auto"
 cp "$LIVE/config.toml" "$WORK/generic-auto/config.toml"
 unset CODEX_CONFIG_STATION
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/generic-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
   "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/generic-auto.out"
+[ ! -e "$WORK/generic-auto/AGENTS.md" ]
 python3 - "$WORK/generic-auto/config.toml" <<'PY'
 import sys
 import tomllib
@@ -120,12 +131,27 @@ backup=$(find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.*' -print 
 [ -f "$backup/config.toml" ]
 [ ! -e "$backup/auth.json" ]
 [ ! -e "$backup/sessions" ]
+cmp "$SOURCE/AGENTS.md" "$LIVE/AGENTS.md"
+grep -q '^Previous global instructions$' "$backup/AGENTS.md"
+cmp "$SOURCE/themes/example.tmTheme" "$LIVE/themes/example.tmTheme"
+grep -q '^old theme$' "$backup/themes/example.tmTheme"
+grep -q '^user theme$' "$LIVE/themes/personal.tmTheme"
+[ ! -e "$backup/themes/personal.tmTheme" ]
 
 before=$(cksum "$LIVE/config.toml")
+theme_before=$(cksum "$LIVE/themes/example.tmTheme")
+agents_before=$(cksum "$LIVE/AGENTS.md")
+printf '%s\n' 'Updated Executive response instructions' > "$SOURCE/AGENTS.md"
+cp "$SOURCE/themes/example.tmTheme" "$SOURCE/themes/new-preview.tmTheme"
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --dry-run >"$WORK/dry.out"
 after=$(cksum "$LIVE/config.toml")
 [ "$before" = "$after" ]
+[ "$agents_before" = "$(cksum "$LIVE/AGENTS.md")" ]
+grep -q '+Updated Executive response instructions' "$WORK/dry.out"
+[ "$theme_before" = "$(cksum "$LIVE/themes/example.tmTheme")" ]
+[ ! -e "$LIVE/themes/new-preview.tmTheme" ]
+grep -q 'would install theme: themes/new-preview.tmTheme' "$WORK/dry.out"
 grep -q 'dry-run: validated staging; no files were written' "$WORK/dry.out"
 
 printf '%s\n' 'model = "newer"' > "$SOURCE/config.toml"
@@ -169,9 +195,9 @@ printf '%s\n' \
 PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/mini" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=damilola-mbm "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/mini.out"
 grep -q 'model = "newer"' "$WORK/mini/config.toml"
-grep -q 'approval_policy = "on-request"' "$WORK/mini/config.toml"
-grep -q 'sandbox_mode = "workspace-write"' "$WORK/mini/config.toml"
-grep -q 'status_line = \["mini-status"\]' "$WORK/mini/config.toml"
+grep -q 'approval_policy = "never"' "$WORK/mini/config.toml"
+grep -q 'sandbox_mode = "danger-full-access"' "$WORK/mini/config.toml"
+grep -q 'status_line = \["thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress"\]' "$WORK/mini/config.toml"
 
 mkdir -p "$WORK/alternate-header"
 printf '%s\n' \
@@ -351,4 +377,29 @@ for b in "$HOME"/.codex-config.backup.*; do
     [ -f "$b/think.config.toml" ] && found_backup=1
 done
 [ "$found_backup" -eq 1 ] || { echo "no backup captured the removed think.config.toml" >&2; exit 1; }
+# Malformed repo themes must fail before either the theme or config is installed.
+before=$(cksum "$LIVE/config.toml")
+theme_before=$(cksum "$LIVE/themes/example.tmTheme")
+printf '%s\n' 'invalid theme' > "$SOURCE/themes/example.tmTheme"
+if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/bad-theme.out" 2>&1; then
+    echo "invalid staged theme unexpectedly installed" >&2
+    exit 1
+fi
+[ "$before" = "$(cksum "$LIVE/config.toml")" ]
+[ "$theme_before" = "$(cksum "$LIVE/themes/example.tmTheme")" ]
+grep -q 'invalid theme' "$WORK/bad-theme.out"
+python3 - "$SOURCE/themes/example.tmTheme" <<'PY'
+import plistlib, sys
+with open(sys.argv[1], "wb") as target:
+    plistlib.dump({"name": "Invalid empty theme", "settings": []}, target)
+PY
+if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+  CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/empty-theme.out" 2>&1; then
+    echo "empty theme unexpectedly installed" >&2
+    exit 1
+fi
+[ "$before" = "$(cksum "$LIVE/config.toml")" ]
+[ "$theme_before" = "$(cksum "$LIVE/themes/example.tmTheme")" ]
+grep -q 'nonempty settings array' "$WORK/empty-theme.out"
 echo "PASS test-sync"

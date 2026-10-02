@@ -1,0 +1,9 @@
+--- a/sync-manifests/damilola-mbm.json
++++ b/sync-manifests/damilola-mbm.json
+@@ -1,3 +1,5 @@
+ {
+-  "sync": {}
++  "sync": {
++    "config_owned_keys": ["model", "model_reasoning_effort", "web_search", "approval_policy", "sandbox_mode"]
++  }
+ }

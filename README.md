@@ -2,7 +2,7 @@
 
 This public repository is the source of truth for the small, explicit portion
 of a Codex home that it owns. It uses native Codex configuration and file-based
-profiles; it does not ship a persona dispatcher, custom prompts, or
+profiles; it does not ship a persona dispatcher or
 `[profiles.*]` tables.
 
 ## Owned configuration
@@ -16,18 +16,45 @@ profiles; it does not ship a persona dispatcher, custom prompts, or
 - `sandbox_mode` (`"danger-full-access"`)
 
 It also owns the top-level `[tui]` table, whose `status_line` shows the thread,
-model/reasoning, Git branch, current directory, context usage, weekly and five-hour
-remaining quotas, and task progress. Native theme-derived colors are enabled. The line
-uses only Codex-native items; it does not execute the Claude shell script or
-access Claude usage data.
+model/reasoning, Git branch, current directory, Codex version, context remaining,
+weekly quota remaining, and five-hour quota remaining.
+Codex uses its built-in **Monokai Extended Origin** theme
+(`tui.theme = "monokai-extended-origin"`). No custom Executive theme is shipped.
+This setting controls code/diff highlighting and native status-line colors;
+Executive response formatting is configured separately in `AGENTS.md`.
+
+The status line is **native Codex only**. This repository does not install or
+modify tmux status rows. In Codex 0.159.2, native items cannot run a shell script
+or render arbitrary custom fields. Context and both quota windows consistently show the percentage remaining.
+Quota fields appear only when Codex receives the corresponding window; accounts
+without a five-hour window will not display a fabricated value.
+There is no native output-style label, burn index, or five-segment usage bar.
+
+Sync backs up and retires unchanged files from the withdrawn tmux
+companion and custom Executive theme. Customized files or saved preview state are preserved so an existing
+preview can still be restored manually. Sync never changes tmux settings.
+
+Native footer colors come from the syntax theme. Session colors vary by thread
+ID; model, branch, path, usage, and version use theme scopes. Independent fixed
+field colors, separately colored labels and values, and usage-pressure color
+thresholds are not configurable in this release. Selecting Monokai Extended Origin uses its native footer palette.
+
+The theme is a visual palette. Separately, `system-configs/.codex/AGENTS.md`
+installs the Executive response style as global Codex instructions: tagged
+openings (`FYI`, `DECISION`, `APPROVAL`, `INPUT`, `ACTION`), action metadata when
+needed, concise sourced evidence, and a closing `Next` line. Required review
+schemas, exact-output tasks, and automation protocols keep their prescribed format.
+This style supplements Codex's coding instructions; it does not replace them.
 It also owns the file profiles that it ships (`think.config.toml`,
 `code.config.toml`, and `review.config.toml`). The profile values mirror the
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
-These approval, sandbox, and TUI defaults apply only when the laptop-default
-ownership list is in use. The checked-in Mac Mini manifest remains scoped to
-model settings and profiles, so it does not receive them.
+The checked-in Mac Mini manifest has an empty override set (`"sync": {}`),
+so it inherits all repository-owned settings, profiles, and global instructions,
+including the native status line and full-access defaults (`approval_policy =
+"never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
+also apply to fleet processes that do not supply higher-priority overrides.
 
 ## Never touched
 
@@ -68,28 +95,40 @@ that backup; `--force` bypasses the local `origin/main` freshness comparison.
 Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
 laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
 for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
-auto-detected host instead receives the restricted Mini-equivalent key set
-(`model`, `model_reasoning_effort`, and `web_search`). The checked-in Mini
-manifest intentionally enables only those model keys and profiles.
+auto-detected host instead receives the restricted key set (`model`,
+`model_reasoning_effort`, and `web_search`) without global `AGENTS.md`.
+Recognized or explicitly selected stations install the shipped `AGENTS.md` by
+default. A manifest's `agents_md: false` skips future instruction updates;
+it does not remove an already installed `AGENTS.md` or disable its behavior.
+The checked-in Mini manifest
+has no exceptions: it inherits all repository-owned settings and profiles.
 
 ## Rollout
 
-Roll out on a laptop first. On the Mini, preview only:
+Preview the changes before applying, including on the Mini:
 
 ```sh
 scripts/sync.sh --dry-run
 ```
 
-After the resulting diff and staged validator are reviewed, schedule a normal
-apply in a maintenance window and smoke the fleet gate:
+On the Mini, run the fleet review smoke from the BareClaude checkout before
+applying (replace the path with your current codex-config checkout):
 
 ```sh
-infra/scripts/codex-review.sh
+infra/scripts/codex-review.sh --base origin/main --repo-root /path/to/codex-config
 ```
 
-The Mini Codex home is a fleet surface. Do not use this repository to change
-global instructions, hooks, rules, or user skills there until their impact
-reviews explicitly enable them.
+Review the diff and staged validation, then apply manually:
+
+```sh
+scripts/sync.sh
+```
+
+The Mini Codex home is a fleet surface. Executive formatting applies to
+human-facing prose, including other processes using this home; it explicitly
+defers to machine-readable and review output contracts. Hooks, rules, and user
+skills remain outside this rollout. Global instructions load at session startup;
+restart/resume existing sessions after sync to load them and the status-line order.
 
 ## Tests
 

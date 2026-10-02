@@ -1,17 +1,3 @@
 {
-  "_comment": "Mac Mini fleet node. Keep the fleet-visible global surfaces off until their impact passes are separately approved.",
-  "mode": "scoped",
-  "sync": {
-    "profiles": true,
-    "agents_md": false,
-    "rules": false,
-    "hooks": false,
-    "skills": false,
-    "config": "merge",
-    "config_owned_keys": [
-      "model",
-      "model_reasoning_effort",
-      "web_search"
-    ]
-  }
+  "sync": {}
 }
