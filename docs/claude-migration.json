@@ -1,0 +1,376 @@
+{
+  "source_repository": "https://github.com/damilola-elegbede-org/claude-config",
+  "source_commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0",
+  "skills": 38,
+  "agents": 8,
+  "entries": [
+    {
+      "kind": "agent",
+      "name": "architect",
+      "source": "system-configs/.claude/agents/architect.md",
+      "source_sha256": "e893371ba8fcda5ddd10ba284c98ecf61c9eb77f49c5c0c92d33be246f7a3e0a",
+      "target": "system-configs/.codex/agents/architect.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "code-reviewer",
+      "source": "system-configs/.claude/agents/code-reviewer.md",
+      "source_sha256": "fbb4c9642e1df7e7909c7321d939cf9cfa4270022deafd76928ba757d8dfb84a",
+      "target": "system-configs/.codex/agents/code-reviewer.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "debugger",
+      "source": "system-configs/.claude/agents/debugger.md",
+      "source_sha256": "a03e02165d96b2053ddba2ffa0745c8067745404e4b184e5396cd706a7d06ac7",
+      "target": "system-configs/.codex/agents/debugger.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "devops",
+      "source": "system-configs/.claude/agents/devops.md",
+      "source_sha256": "0ece2c9f9684df12f3ef53349ee16f8edc13d61089f7ad7a541bcaab38d22796",
+      "target": "system-configs/.codex/agents/devops.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "feature-agent",
+      "source": "system-configs/.claude/agents/feature-agent.md",
+      "source_sha256": "5af0ab7d18af286bb98fc42ecdcfd22c544fc059a1608d2b3359b63a64f535fe",
+      "target": "system-configs/.codex/agents/feature-agent.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "frontend-engineer",
+      "source": "system-configs/.claude/agents/frontend-engineer.md",
+      "source_sha256": "95529435044f8f42aa866ee358c9e70ecedf261029f44129ec58ca464fa86ee5",
+      "target": "system-configs/.codex/agents/frontend-engineer.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "security-auditor",
+      "source": "system-configs/.claude/agents/security-auditor.md",
+      "source_sha256": "a685834089d64a8776f224a8bf23c940fbc3721a7fe4373e768862197ba15392",
+      "target": "system-configs/.codex/agents/security-auditor.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "test-engineer",
+      "source": "system-configs/.claude/agents/test-engineer.md",
+      "source_sha256": "efacfbfc2ec4906ea15244079d97e99226943817c97bbdc90863ba1c5cf1c8ea",
+      "target": "system-configs/.codex/agents/test-engineer.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "ask",
+      "source": "system-configs/.claude/skills/ask/SKILL.md",
+      "source_sha256": "e0a2acd5130effa41c95a460d0a6faa8d0834fb83cbdb9ec82eccebe7581d1d0",
+      "target": "system-configs/.agents/skills/ask/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "ask-jev",
+      "source": "system-configs/.claude/skills/ask-jev/SKILL.md",
+      "source_sha256": "b70b103e022a3f3dbf426d2f968aea9458e4162bc6b9253b2ca873f66a77de04",
+      "target": "system-configs/.agents/skills/ask-jev/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "audit",
+      "source": "system-configs/.claude/skills/audit/SKILL.md",
+      "source_sha256": "95297820062bf68d463b3ad4722687e3fe75c2b9a1457b80d8404e99437c0f7a",
+      "target": "system-configs/.agents/skills/audit/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "branch",
+      "source": "system-configs/.claude/skills/branch/SKILL.md",
+      "source_sha256": "0931d24bfbf8b4a1541ca81d1b48e289abf9900f7a7dbf3d1a48c8c88e22da32",
+      "target": "system-configs/.agents/skills/branch/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "bro",
+      "source": "system-configs/.claude/skills/bro/SKILL.md",
+      "source_sha256": "d390ef178422532d8bb49f7a29848fc76b54f9a96d411d82e2a89dc28bbffd70",
+      "target": "system-configs/.agents/skills/bro/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "changelog",
+      "source": "system-configs/.claude/skills/changelog/SKILL.md",
+      "source_sha256": "64b1fd4e8ef64eb926f5c6abc7f3d5db6b863640ff3acb3bdbb66eb6018117fa",
+      "target": "system-configs/.agents/skills/changelog/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "colorwheel",
+      "source": "system-configs/.claude/skills/colorwheel/SKILL.md",
+      "source_sha256": "7297afd4822aaeca7222c6a36757d2cdf4ebdeb7cfb2d4389b6936faad00dc36",
+      "target": "system-configs/.agents/skills/colorwheel/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "commit",
+      "source": "system-configs/.claude/skills/commit/SKILL.md",
+      "source_sha256": "d113f774d0631d894d5a5467f45c8b10d846905a1bc1552e1fe5ea5594b1d557",
+      "target": "system-configs/.agents/skills/commit/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "debug",
+      "source": "system-configs/.claude/skills/debug/SKILL.md",
+      "source_sha256": "fd78a00f61b17787f2ae95cbc79b606178a6d4cb0f8f90803f179369d839a690",
+      "target": "system-configs/.agents/skills/debug/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "deps",
+      "source": "system-configs/.claude/skills/deps/SKILL.md",
+      "source_sha256": "9e2a4cd906b50d683604c43e4361ac626a56db8d31c9918b6d839058ec137289",
+      "target": "system-configs/.agents/skills/deps/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "docs",
+      "source": "system-configs/.claude/skills/docs/SKILL.md",
+      "source_sha256": "fcf970edc242ac6c10a13f6fba61d637743371a5fc3950f21650d84d46c8a7e1",
+      "target": "system-configs/.agents/skills/docs/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "docx",
+      "source": "system-configs/.claude/skills/docx/SKILL.md",
+      "source_sha256": "56c7c6b598eae97b8519088fce93d4388515e6a033a3e054cf0ca18065cca78e",
+      "target": "system-configs/.agents/skills/docx/SKILL.md",
+      "strategy": "independent-equivalent"
+    },
+    {
+      "kind": "skill",
+      "name": "excalidraw",
+      "source": "system-configs/.claude/skills/excalidraw/SKILL.md",
+      "source_sha256": "cb596187357c6719798cf1182f36e1b88457f484ff898f6c97d08e707c6f7d2d",
+      "target": "system-configs/.agents/skills/excalidraw/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "feature-lifecycle",
+      "source": "system-configs/.claude/skills/feature-lifecycle/SKILL.md",
+      "source_sha256": "d8da5350d461bef6bc988b00a746ad8620acd42f16f82e685daceeb4298a1c17",
+      "target": "system-configs/.agents/skills/feature-lifecycle/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "fix-ci",
+      "source": "system-configs/.claude/skills/fix-ci/SKILL.md",
+      "source_sha256": "3efa7a4b124467d5599c2199b7be12d0bd0c5aff0b1434c214ec2bde79907b99",
+      "target": "system-configs/.agents/skills/fix-ci/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "frontend-design",
+      "source": "system-configs/.claude/skills/frontend-design/SKILL.md",
+      "source_sha256": "f04c45f1e6b07fd8e8b7b192a3dcd0817630c84fa15ba2dd6e6f8cb0492c7a8c",
+      "target": "system-configs/.agents/skills/frontend-design/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "gauntlet-loop",
+      "source": "system-configs/.claude/skills/gauntlet-loop/SKILL.md",
+      "source_sha256": "0abbba34600b36668098bea37ed78ca424ad617aedcdfa440569afc33ce5fadd",
+      "target": "system-configs/.agents/skills/gauntlet-loop/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "implement",
+      "source": "system-configs/.claude/skills/implement/SKILL.md",
+      "source_sha256": "efa90c8d85196a4a99406fa4b9040ec11a19c1f89538917dffc0b34a2047cd57",
+      "target": "system-configs/.agents/skills/implement/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "interview",
+      "source": "system-configs/.claude/skills/interview/SKILL.md",
+      "source_sha256": "aadd086895d4f9af1a43b41305fd55476ae90e66e160a6b667f503b06e08e686",
+      "target": "system-configs/.agents/skills/interview/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "mcp-builder",
+      "source": "system-configs/.claude/skills/mcp-builder/SKILL.md",
+      "source_sha256": "bbb34dd9944ebe552371453907b1d61a80ed90f157e1ace24b09ef28f0361fa3",
+      "target": "system-configs/.agents/skills/mcp-builder/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "merge",
+      "source": "system-configs/.claude/skills/merge/SKILL.md",
+      "source_sha256": "7d67ea2388015f4e863811a805f4a305c6bc43e8038836731517b2d8a73be238",
+      "target": "system-configs/.agents/skills/merge/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "pdf",
+      "source": "system-configs/.claude/skills/pdf/SKILL.md",
+      "source_sha256": "6a1feda4d8897c8abc3d15eb3876ea68a396202117209aea9e85d9ffc2cf4c08",
+      "target": "system-configs/.agents/skills/pdf/SKILL.md",
+      "strategy": "independent-equivalent"
+    },
+    {
+      "kind": "skill",
+      "name": "plan",
+      "source": "system-configs/.claude/skills/plan/SKILL.md",
+      "source_sha256": "814bc0bbd15ac897b99a3452b1740e0fa0ab4ef58301fef3477182b295fff52e",
+      "target": "system-configs/.agents/skills/plan/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "pptx",
+      "source": "system-configs/.claude/skills/pptx/SKILL.md",
+      "source_sha256": "713e8165a732b98f2e390fdfa47bf2dd5ca4de01ef32bb788032b86fa4893b65",
+      "target": "system-configs/.agents/skills/pptx/SKILL.md",
+      "strategy": "independent-equivalent"
+    },
+    {
+      "kind": "skill",
+      "name": "pr",
+      "source": "system-configs/.claude/skills/pr/SKILL.md",
+      "source_sha256": "92ecf90b72205d73592c888b3b5ff2633d048e67a303aeb03fb5561b6ff40239",
+      "target": "system-configs/.agents/skills/pr/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "prime",
+      "source": "system-configs/.claude/skills/prime/SKILL.md",
+      "source_sha256": "02b852de51ef4e5d7ef314bcca849eb25ffe06acea23110ad7df28cfbd8893bc",
+      "target": "system-configs/.agents/skills/prime/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "process-linear",
+      "source": "system-configs/.claude/skills/process-linear/SKILL.md",
+      "source_sha256": "88958ecba1b8a64707fd21b6fbf68d30bacde7dd837e29ff928960e9022b32c9",
+      "target": "system-configs/.agents/skills/process-linear/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "prompt",
+      "source": "system-configs/.claude/skills/prompt/SKILL.md",
+      "source_sha256": "0c50577de2c4f411a9315478603bd39830e17b9dbbe4990d18dc6343aaf2894c",
+      "target": "system-configs/.agents/skills/prompt/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "push",
+      "source": "system-configs/.claude/skills/push/SKILL.md",
+      "source_sha256": "f00b90563e6476cd51df3bdd5b305aaf2ddcfb66d84e68d57f7070598d517b8d",
+      "target": "system-configs/.agents/skills/push/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "rebase",
+      "source": "system-configs/.claude/skills/rebase/SKILL.md",
+      "source_sha256": "930e2fe42534ddb1941571b5975dccbd4c301991a5395fea9bad2ea4ae6852a4",
+      "target": "system-configs/.agents/skills/rebase/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "resolve-comments",
+      "source": "system-configs/.claude/skills/resolve-comments/SKILL.md",
+      "source_sha256": "8e8b0bac02a04490deabc8ffb39ef8f9d78638ee3c7ccf3533f2920b4990a701",
+      "target": "system-configs/.agents/skills/resolve-comments/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "review",
+      "source": "system-configs/.claude/skills/review/SKILL.md",
+      "source_sha256": "58013afb6ed2cca620606f0bf21d9764da64df07a4a1ae5c41a2d773922e7cfc",
+      "target": "system-configs/.agents/skills/review/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "ship-it",
+      "source": "system-configs/.claude/skills/ship-it/SKILL.md",
+      "source_sha256": "5b42685bf90ce19d4fe6347f32309fb068592ff2fd6bb1dd545646b886b040be",
+      "target": "system-configs/.agents/skills/ship-it/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "test",
+      "source": "system-configs/.claude/skills/test/SKILL.md",
+      "source_sha256": "e7c100dda119454ba44518ddcb76d03b6f50b1977acb5ea1a6cdb19985a195c7",
+      "target": "system-configs/.agents/skills/test/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "verify",
+      "source": "system-configs/.claude/skills/verify/SKILL.md",
+      "source_sha256": "d554d8221b6a3b97d87735079e585ac511d58cf0b2d57006a5752c908c97fda1",
+      "target": "system-configs/.agents/skills/verify/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "watch",
+      "source": "system-configs/.claude/skills/watch/SKILL.md",
+      "source_sha256": "58a567a39b89bece5a476e6e4b37fdaa0804c2c2752660e5a4e5a8f214ce0c04",
+      "target": "system-configs/.agents/skills/watch/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "webapp-testing",
+      "source": "system-configs/.claude/skills/webapp-testing/SKILL.md",
+      "source_sha256": "c3233bbee5401397d3016f4822810d4f7062c1c2623ec656b8d88f0ac281ab73",
+      "target": "system-configs/.agents/skills/webapp-testing/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "xlsx",
+      "source": "system-configs/.claude/skills/xlsx/SKILL.md",
+      "source_sha256": "98e7c13080843acb24bdec16117ad59a52e9b0f1e98dfe764da0e508149a49fa",
+      "target": "system-configs/.agents/skills/xlsx/SKILL.md",
+      "strategy": "independent-equivalent"
+    }
+  ]
+}
