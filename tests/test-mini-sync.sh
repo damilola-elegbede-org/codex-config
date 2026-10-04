@@ -4,7 +4,7 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT HUP INT TERM
-mkdir -p "$WORK/bin" "$WORK/live"
+mkdir -p "$WORK/bin" "$WORK/live" "$WORK/home"
 printf '%s\n' '#!/bin/sh' 'echo damilola-mbm' > "$WORK/bin/scutil"
 printf '%s\n' '#!/bin/sh' 'echo "Model provider __nonexistent__ not found" >&2' 'exit 1' > "$WORK/bin/codex"
 chmod +x "$WORK/bin/scutil" "$WORK/bin/codex"
@@ -24,7 +24,7 @@ TOML
 printf '%s\n' 'model = "custom"' > "$WORK/live/custom.config.toml"
 printf '%s\n' 'test-auth-state' > "$WORK/live/auth.json"
 unset CODEX_CONFIG_STATION CODEX_CONFIG_SOURCE
-PATH="$WORK/bin:$PATH" CODEX_HOME="$WORK/live" \
+PATH="$WORK/bin:$PATH" HOME="$WORK/home" CODEX_HOME="$WORK/live" CODEX_SKILLS_HOME="$WORK/home/.agents/skills" \
   "$ROOT/scripts/sync.sh" --force --no-backup > "$WORK/sync.out"
 python3 - "$ROOT/system-configs/.codex" "$WORK/live" <<'PY'
 import pathlib

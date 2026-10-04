@@ -5,6 +5,8 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 SOURCE_CODEX=${CODEX_CONFIG_SOURCE:-"$ROOT/system-configs/.codex"}
 TARGET_CODEX=${CODEX_HOME:-"$HOME/.codex"}
+SOURCE_SKILLS=${CODEX_CONFIG_SKILLS_SOURCE:-"$(dirname "$SOURCE_CODEX")/.agents/skills"}
+TARGET_SKILLS=${CODEX_SKILLS_HOME:-"$HOME/.agents/skills"}
 DRY_RUN=false
 CREATE_BACKUP=true
 FORCE=false
@@ -61,6 +63,8 @@ else
 fi
 PROFILES=$(manifest_value profiles true)
 AGENTS_MD=$(manifest_value agents_md "$DEFAULT_AGENTS_MD")
+SKILLS=$(manifest_value skills "$DEFAULT_AGENTS_MD")
+AGENTS=$(manifest_value agents "$DEFAULT_AGENTS_MD")
 RULES=$(manifest_value rules false)
 HOOKS=$(manifest_value hooks false)
 case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac
@@ -138,6 +142,18 @@ done
 RETIRED_LIST="$STAGE/.retired-config"
 python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" > "$RETIRED_LIST"
 
+EXTENSION_FLAGS=
+case "$SKILLS" in true) EXTENSION_FLAGS="--skills" ;; false) ;; *) die_preflight "skills must be a boolean" ;; esac
+case "$AGENTS" in true) EXTENSION_FLAGS="$EXTENSION_FLAGS --agents" ;; false) ;; *) die_preflight "agents must be a boolean" ;; esac
+mkdir -p "$STAGE/.extensions"
+if ! python3 "$ROOT/scripts/sync-extensions.py" stage --stage "$STAGE/.extensions" \
+    --skills-source "$SOURCE_SKILLS" --agents-source "$SOURCE_CODEX/agents" \
+    --skills-target "$TARGET_SKILLS" --agents-target "$TARGET_CODEX/agents" \
+    $EXTENSION_FLAGS > "$STAGE/.extension-summary"; then
+    echo "staging validation failed; live configuration was not changed" >&2
+    exit 2
+fi
+
 if ! "$ROOT/scripts/validate.sh" "$STAGE"; then
     echo "staging validation failed; live configuration was not changed" >&2
     exit 2
@@ -146,6 +162,7 @@ print_diff() {
     echo "station: $STATION"
     echo "manifest: ${MANIFEST#$ROOT/}"
     echo "config: merge ($OWNED_KEYS)"
+    cat "$STAGE/.extension-summary"
     diff -u "$TARGET_CODEX/config.toml" "$STAGE/config.toml" 2>/dev/null || true
     if [ -f "$STAGE/AGENTS.md" ]; then
         if [ -f "$TARGET_CODEX/AGENTS.md" ]; then
@@ -243,6 +260,17 @@ fi
 # Recheck hashes and preview state before removal; a concurrent user edit wins.
 if [ -s "$RETIRED_LIST" ]; then
     python3 "$ROOT/scripts/retire-config.py" "$TARGET_CODEX" --remove --plan "$RETIRED_LIST"
+fi
+if [ -n "$BACKUP" ]; then
+    if ! python3 "$ROOT/scripts/sync-extensions.py" apply --stage "$STAGE/.extensions" --backup "$BACKUP"; then
+        echo "extension install failed; backup: $BACKUP" >&2
+        exit 3
+    fi
+else
+    if ! python3 "$ROOT/scripts/sync-extensions.py" apply --stage "$STAGE/.extensions"; then
+        echo "extension install failed; backup: none" >&2
+        exit 3
+    fi
 fi
 if [ -n "$BACKUP" ]; then
     find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]_[0-9][0-9][0-9][0-9][0-9][0-9]' -print |

@@ -56,6 +56,34 @@ including the native status line and full-access defaults (`approval_policy =
 "never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
 also apply to fleet processes that do not supply higher-priority overrides.
 
+## Skills and agents
+
+The repository includes Codex equivalents of all **38 skills and 8 subagents**
+from `claude-config` at `cb257acb72ef568efc5d9dc2c25c365b179383b0`.
+[Migration inventory and limits](docs/CLAUDE-MIGRATION.md) explain the adaptations;
+[the provenance manifest](docs/claude-migration.json) records every source path and hash.
+
+Sync installs `system-configs/.agents/skills/` into `~/.agents/skills/`, including
+shared office resources, and `system-configs/.codex/agents/*.toml` into
+`$CODEX_HOME/agents/`. Recognized or explicitly selected stations install these
+by default; unknown auto-detected hosts do not. Manifest keys `skills: false`
+and `agents: false` skip those future updates without deleting installed files.
+
+Only shipped paths are managed. Unrelated skills, agents, and extra files are
+preserved. A conflicting unmanaged or locally modified shipped file stops sync
+before installation; review and relocate the custom copy rather than forcing it.
+An identical existing copy can be adopted. Ownership hashes are stored in
+`$CODEX_HOME/.codex-config-managed-extensions.json`; backups of changed resources
+live under `extensions/skills/` and `extensions/agents/` in the normal backup.
+Installed extension files and ownership metadata are readable/writable only by
+the owner; executable helpers retain owner execution. Removed source extensions
+are deliberately not deleted automatically.
+
+`CODEX_CONFIG_SKILLS_SOURCE` overrides the skill source; otherwise it is the
+`.agents/skills` sibling of `CODEX_CONFIG_SOURCE`. `CODEX_SKILLS_HOME` overrides
+the skill destination for isolated tests; Codex still needs to discover that
+location, so normal installs should use `~/.agents/skills`.
+
 ## Never touched
 
 Sync does not overwrite `[projects.*]`, `[notice.model_migrations]`, or nested
@@ -68,9 +96,10 @@ configuration.
 
 ## Validate and sync
 
-Validate a staged home without spending a token:
+Validate the extension source, then a staged home without spending a token:
 
 ```sh
+python3 scripts/validate-extensions.py system-configs/.agents/skills system-configs/.codex/agents
 scripts/validate.sh "$CODEX_HOME"
 ```
 
@@ -96,7 +125,7 @@ Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
 laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
 for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
 auto-detected host instead receives the restricted key set (`model`,
-`model_reasoning_effort`, and `web_search`) without global `AGENTS.md`.
+`model_reasoning_effort`, and `web_search`) without global `AGENTS.md`, migrated skills, or custom agents.
 Recognized or explicitly selected stations install the shipped `AGENTS.md` by
 default. A manifest's `agents_md: false` skips future instruction updates;
 it does not remove an already installed `AGENTS.md` or disable its behavior.
@@ -126,8 +155,9 @@ scripts/sync.sh
 
 The Mini Codex home is a fleet surface. Executive formatting applies to
 human-facing prose, including other processes using this home; it explicitly
-defers to machine-readable and review output contracts. Hooks, rules, and user
-skills remain outside this rollout. Global instructions load at session startup;
+defers to machine-readable and review output contracts. Hooks and rules remain outside this rollout. User extensions outside shipped
+paths remain untouched. Skill and agent changes require a fresh session;
+independent agent work still follows the session’s delegation policy. Global instructions load at session startup;
 restart/resume existing sessions after sync to load them and the status-line order.
 
 ## Tests

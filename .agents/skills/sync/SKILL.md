@@ -33,5 +33,12 @@ Executive response style. Unknown auto-detected hosts do not receive global
 instructions. What it never touches: `[projects.*]`,
 `[notice.model_migrations]`, nested `[tui.*]` state, `auth.json`, `sessions/`,
 `history.jsonl`, sqlite, `cache/`, `log/`, `plugins/`, `skills/.system`,
-`rules/default.rules`, user skills. On a fleet node (Mac Mini) run
+`rules/default.rules`, unrelated user skills and agents. Shipped skills and shared
+resources install into `~/.agents/skills`; native agent TOMLs install into
+`$CODEX_HOME/agents`. Sync tracks owned file hashes, preserves unrelated files,
+and stops before installation on customized or unmanaged conflicting shipped
+paths. Recognized or explicitly selected stations install these by default;
+manifest `skills: false` / `agents: false` skips future updates. Unknown
+auto-detected hosts do not receive these extensions. Removed source extensions
+are retained until explicit retirement. On a fleet node (Mac Mini) run
 `--dry-run` first, then a `codex-review.sh` smoke, before a real sync.
