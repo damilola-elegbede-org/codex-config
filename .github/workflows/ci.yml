@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Run hermetic validation and sync tests
         run: ./tests/test.sh
       - name: Prove mutation guards can fail

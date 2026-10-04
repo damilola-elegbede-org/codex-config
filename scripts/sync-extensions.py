@@ -132,7 +132,7 @@ def apply(args):
             if args.backup and target.exists():
                 backup = safe_path(args.backup / "extensions" / file["kind"], file["relative"])
                 backup.parent.mkdir(parents=True, exist_ok=True)
-                atomic_write(backup, target.read_bytes(), file["mode"])
+                atomic_write(backup, target.read_bytes(), target.stat().st_mode)
             source = safe_path(args.stage / file["kind"], file["relative"])
             atomic_write(target, source.read_bytes(), file["mode"])
         index["files"][file["key"]] = file["sha256"]

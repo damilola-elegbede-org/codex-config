@@ -108,6 +108,26 @@ class Extensions(unittest.TestCase):
         self.helper("apply", success=False)
         self.assertFalse(target.exists())
 
+    def test_backup_preserves_previous_execute_bit_when_source_mode_changes(self):
+        path = self.skill()
+        script = path.parent / "helper.py"
+        target = self.live / "skills/example/helper.py"
+        for previous_mode, new_mode in ((0o700, 0o600), (0o600, 0o700)):
+            with self.subTest(previous_mode=previous_mode, new_mode=new_mode):
+                script.write_text("print('previous')", encoding="utf-8")
+                script.chmod(previous_mode)
+                self.helper("stage")
+                self.helper("apply")
+                script.write_text("print('updated')", encoding="utf-8")
+                script.chmod(new_mode)
+                self.helper("stage")
+                backup_root = self.work / f"backup-{previous_mode}"
+                self.helper("apply", "--backup", str(backup_root))
+                backup = backup_root / "extensions/skills/example/helper.py"
+                self.assertEqual(backup.read_text(encoding="utf-8"), "print('previous')")
+                self.assertEqual(backup.stat().st_mode & 0o777, previous_mode)
+                self.assertEqual(target.stat().st_mode & 0o777, new_mode)
+
     def test_unmanaged_collision_and_symlink(self):
         self.skill()
         target = self.live / "skills/example/SKILL.md"
