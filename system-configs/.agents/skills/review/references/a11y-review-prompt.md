@@ -29,6 +29,7 @@ Write your findings to .tmp/review-accessibility.json using this schema:
 {
   "schema_version": "1.0",
   "branch": "{current_branch}",
+  "source_sha": "{verified HEAD SHA}",
   "created_at": "{ISO timestamp}",
   "source": "a11y-reviewer",
   "summary": "Accessibility assessment",
@@ -49,3 +50,5 @@ Write your findings to .tmp/review-accessibility.json using this schema:
 
 If no frontend/UI files are in scope, write empty issues array with
 summary: "No UI files in scope for accessibility review."
+
+Use the shared artifact contract in ../../resolve-comments/references/schemas.md. Preserve the verified reviewed branch and HEAD SHA in the output.

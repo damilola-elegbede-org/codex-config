@@ -28,7 +28,7 @@ Run with the test environment set where the ecosystem expects it (e.g. `NODE_ENV
 - Jest / Vitest: `--coverage`
 - pytest: `--cov=src`
 - Go: `-cover`
-- Rust: `--coverage` (needs `llvm-cov`)
+- Rust: `cargo llvm-cov` (needs `cargo-llvm-cov`)
 
 ## When several test commands exist
 

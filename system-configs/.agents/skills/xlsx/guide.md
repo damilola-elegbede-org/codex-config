@@ -18,4 +18,6 @@ Keep formulas as formulas. Align inputs, units, dates, currencies, and percentag
 
 openpyxl and XlsxWriter do not calculate formulas. An available spreadsheet engine such as LibreOffice can recalculate an exported copy; verify cached results afterwards with data_only=True. When recalculation is unavailable, say so. Check formula errors including #REF!, #DIV/0!, #VALUE!, #NAME?, and #N/A in the relevant cells. A stale cache is not evidence of a correct formula.
 
-Run `python3 ../office-common/package-check.py output.xlsx` from this skill directory. This validates ZIP/XML integrity, not business logic, formula calculation, macro behavior, or visual layout. Inspect relevant sheets with an available renderer/editor when formatting matters.
+For XLSX only, run `python3 ../office-common/package-check.py output.xlsx` from this skill directory. This validates ZIP/XML integrity, not business logic, formula calculation, macro behavior, or visual layout. Inspect relevant sheets with an available renderer/editor when formatting matters.
+
+For XLSM, use a macro-capable editor, preserve VBA and signatures as required, and use a compatible package validator. The bundled checker does not accept XLSM. For CSV/TSV, use the correct delimiter/encoding, verify row and column counts and actual values, and round-trip through an appropriate reader. Those text formats have no workbook formulas, macros, or ZIP package to validate.

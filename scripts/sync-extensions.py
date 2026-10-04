@@ -40,7 +40,7 @@ def safe_path(root, relative):
     return path
 
 
-def atomic_write(path, content, mode=0o644):
+def atomic_write(path, content, mode=0o600):
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temporary = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     try:
@@ -48,7 +48,8 @@ def atomic_write(path, content, mode=0o644):
             handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
-        os.chmod(temporary, mode)
+        # Installed instructions and ownership paths belong to this user only.
+        os.chmod(temporary, 0o700 if mode & stat.S_IXUSR else 0o600)
         os.replace(temporary, path)
     finally:
         if os.path.exists(temporary):
@@ -58,7 +59,7 @@ def atomic_write(path, content, mode=0o644):
 def load_index(path, roots):
     if not path.exists():
         return {"version": 1, "roots": roots, "files": {}}
-    value = json.loads(path.read_text())
+    value = json.loads(path.read_text(encoding="utf-8"))
     if value.get("version") != 1 or value.get("roots") != roots or not isinstance(value.get("files"), dict):
         raise ValueError(f"invalid or mismatched ownership index: {path}")
     for key, checksum in value["files"].items():
@@ -101,7 +102,7 @@ def stage(args):
     spec.loader.exec_module(module)
     counts = module.validate(args.stage / "skills", args.stage / "agents")
     plan = {"roots": roots, "files": files, "index": index, "index_expected": digest(index_path)}
-    (args.stage / "plan.json").write_text(json.dumps(plan))
+    (args.stage / "plan.json").write_text(json.dumps(plan), encoding="utf-8")
     print(f"extensions: {counts[0]} skills, {counts[1]} agents, {len(files)} resource files staged")
     for file in files:
         if file["expected"] != file["sha256"]:
@@ -109,7 +110,7 @@ def stage(args):
 
 
 def apply(args):
-    plan = json.loads((args.stage / "plan.json").read_text())
+    plan = json.loads((args.stage / "plan.json").read_text(encoding="utf-8"))
     roots = plan["roots"]
     index_path = safe_path(Path(roots["agents"]).parent, INDEX)
     if digest(index_path) != plan["index_expected"]:
@@ -131,7 +132,7 @@ def apply(args):
             if args.backup and target.exists():
                 backup = safe_path(args.backup / "extensions" / file["kind"], file["relative"])
                 backup.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(target, backup)
+                atomic_write(backup, target.read_bytes(), file["mode"])
             source = safe_path(args.stage / file["kind"], file["relative"])
             atomic_write(target, source.read_bytes(), file["mode"])
         index["files"][file["key"]] = file["sha256"]
@@ -140,7 +141,7 @@ def apply(args):
     if args.backup and index_path.exists():
         backup = args.backup / INDEX
         backup.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(index_path, backup)
+        atomic_write(backup, index_path.read_bytes())
     atomic_write(index_path, (json.dumps(index, indent=2) + "\n").encode())
     print(f"installed {len(plan['files'])} managed extension files")
 

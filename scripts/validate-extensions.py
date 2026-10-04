@@ -24,7 +24,7 @@ def validate(skills: Path, agents: Path) -> tuple[int, int]:
                 if entry.name == "office-common":
                     continue
                 raise ValueError(f"missing SKILL.md: {entry}")
-            parts = path.read_text().split("---\n", 2)
+            parts = path.read_text(encoding="utf-8").split("---\n", 2)
             if len(parts) != 3 or parts[0]:
                 raise ValueError(f"invalid frontmatter: {path}")
             fields = {}
@@ -46,7 +46,7 @@ def validate(skills: Path, agents: Path) -> tuple[int, int]:
         for path in agents.iterdir():
             if path.suffix != ".toml" or not path.is_file():
                 raise ValueError(f"unexpected agent entry: {path}")
-            agent = tomllib.loads(path.read_text())
+            agent = tomllib.loads(path.read_text(encoding="utf-8"))
             for key in ("name", "description", "developer_instructions"):
                 if not isinstance(agent.get(key), str) or not agent[key].strip():
                     raise ValueError(f"missing {key}: {path}")

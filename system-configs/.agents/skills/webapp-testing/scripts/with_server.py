@@ -19,6 +19,40 @@ import socket
 import time
 import sys
 import argparse
+import os
+import signal
+
+
+def signal_server_group(process, sig):
+    try:
+        os.killpg(process.pid, sig)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        # Darwin reports EPERM for a group whose owned members are all dead.
+        # A still-running leader remains a genuine cleanup failure.
+        if sys.platform == "darwin":
+            try:
+                process.wait(timeout=0.2)
+                return False
+            except subprocess.TimeoutExpired:
+                pass
+        raise
+
+
+def stop_server(process):
+    """Stop the dedicated process group, including children of an exited shell."""
+    signal_server_group(process, signal.SIGTERM)
+    deadline = time.monotonic() + 5
+    while time.monotonic() < deadline:
+        if not signal_server_group(process, 0):
+            process.wait()
+            return
+        time.sleep(0.05)
+    # The shell may exit before a child that ignores SIGTERM. Kill survivors too.
+    signal_server_group(process, signal.SIGKILL)
+    process.wait()
 
 def is_server_ready(port, timeout=30):
     """Wait for server to be ready by polling the port."""
@@ -69,8 +103,7 @@ def main():
             process = subprocess.Popen(
                 server['cmd'],
                 shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
+                start_new_session=True,
             )
             server_processes.append(process)
 
@@ -92,12 +125,7 @@ def main():
         # Clean up all servers
         print(f"\nStopping {len(server_processes)} server(s)...")
         for i, process in enumerate(server_processes):
-            try:
-                process.terminate()
-                process.wait(timeout=5)
-            except subprocess.TimeoutExpired:
-                process.kill()
-                process.wait()
+            stop_server(process)
             print(f"Server {i+1} stopped")
         print("All servers stopped")
 

@@ -9,6 +9,14 @@ import tomllib
 import unittest
 import zipfile
 import xml.etree.ElementTree as ET
+import contextlib
+import io
+import shlex
+import signal
+import socket
+import sys
+import urllib.error
+from unittest.mock import patch
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -54,13 +62,13 @@ class Extensions(unittest.TestCase):
     def test_inventory_and_syntax(self):
         validator = load(ROOT / "scripts/validate-extensions.py", "validator")
         self.assertEqual(validator.validate(SKILLS, AGENTS), (38, 8))
-        migration = json.loads((ROOT / "docs/claude-migration.json").read_text())
+        migration = json.loads((ROOT / "docs/claude-migration.json").read_text(encoding="utf-8"))
         for entry in migration["entries"]:
             self.assertTrue((ROOT / entry["target"]).is_file(), entry)
         for path in SKILLS.rglob("*.py"):
-            ast.parse(path.read_text(), filename=str(path))
+            ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for path in AGENTS.glob("*.toml"):
-            agent = tomllib.loads(path.read_text())
+            agent = tomllib.loads(path.read_text(encoding="utf-8"))
             self.assertNotIn("model", agent)
             self.assertNotIn("model_reasoning_effort", agent)
 
@@ -73,17 +81,18 @@ class Extensions(unittest.TestCase):
         self.helper("apply")
         target = self.live / "skills/example/SKILL.md"
         self.assertEqual(target.read_bytes(), path.read_bytes())
+        self.assertEqual(target.stat().st_mode & 0o777, 0o600)
         unrelated = self.live / "skills/personal/SKILL.md"
         unrelated.parent.mkdir()
         unrelated.write_text("personal")
         self.skill("Updated")
         self.helper("stage")
         self.helper("apply", "--backup", str(self.work / "backup"))
-        self.assertIn("Original", (self.work / "backup/extensions/skills/example/SKILL.md").read_text())
-        self.assertEqual(unrelated.read_text(), "personal")
+        self.assertIn("Original", (self.work / "backup/extensions/skills/example/SKILL.md").read_text(encoding="utf-8"))
+        self.assertEqual(unrelated.read_text(encoding="utf-8"), "personal")
         target.write_text("locally customized")
         self.helper("stage", success=False)
-        self.assertEqual(target.read_text(), "locally customized")
+        self.assertEqual(target.read_text(encoding="utf-8"), "locally customized")
 
     def test_concurrent_edit_and_source_tampering(self):
         path = self.skill()
@@ -92,7 +101,7 @@ class Extensions(unittest.TestCase):
         target.parent.mkdir(parents=True)
         target.write_text("concurrent")
         self.helper("apply", success=False)
-        self.assertEqual(target.read_text(), "concurrent")
+        self.assertEqual(target.read_text(encoding="utf-8"), "concurrent")
         target.unlink()
         self.helper("stage")
         (self.stage / "skills/example/SKILL.md").write_text("tampered")
@@ -138,8 +147,126 @@ class Extensions(unittest.TestCase):
             paths.append(path)
         link = self.work / "linked.py"
         link.symlink_to(paths[0])
-        results = ranker.rank("routing", paths + [link])
+        results = ranker.rank("routing", paths + [link], root=self.work)
         self.assertEqual([Path(item["path"]).name for item in results], ["api.py", "notes.md"])
+
+    def test_ranker_allows_repository_under_excluded_ancestor(self):
+        ranker = load(SKILLS / "ask-jev/scripts/rank-files.py", "ranker")
+        root = self.work / "work/build/project"
+        root.mkdir(parents=True)
+        eligible = root / "api.py"
+        eligible.write_text("routing", encoding="utf-8")
+        private = root / "work/Visa/private.py"
+        private.parent.mkdir(parents=True)
+        private.write_text("routing", encoding="utf-8")
+        outside = self.work / "outside.py"
+        outside.write_text("routing", encoding="utf-8")
+        self.assertEqual([item["path"] for item in ranker.rank("routing", [eligible, private, outside], root)], [str(eligible)])
+
+    def test_utf8_source_validation_in_ascii_locale(self):
+        env = dict(os.environ, LC_ALL="C", PYTHONUTF8="0", PYTHONCOERCECLOCALE="0")
+        result = subprocess.run(["python3", str(ROOT / "scripts/validate-extensions.py"), str(SKILLS), str(AGENTS)], env=env, capture_output=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_installed_helper_and_metadata_permissions(self):
+        path = self.skill()
+        script = path.parent / "helper.py"
+        script.write_text("print('helper')", encoding="utf-8")
+        script.chmod(0o755)
+        self.helper("stage")
+        self.helper("apply")
+        self.assertEqual((self.live / "skills/example/helper.py").stat().st_mode & 0o777, 0o700)
+        self.assertEqual((self.live / ".codex/.codex-config-managed-extensions.json").stat().st_mode & 0o777, 0o600)
+
+    def test_watch_never_uploads_or_reads_keys_without_opt_in(self):
+        watch = load(SKILLS / "watch/watch.py", "watch")
+        args = SimpleNamespace(source="https://example.com/video", start=None, end=None, no_whisper=False,
+                               allow_whisper=False, whisper=None, json=True, max_frames=10, fps=2, resolution=512)
+        with patch.object(watch, "fetch_subs_only", return_value=(None, {})), \
+             patch.object(watch, "select_whisper_backend", side_effect=AssertionError("credential read without opt-in")), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(watch.run_transcript_only(args, self.work), 2)
+        download = {"video_path": "video.mp4", "info": {}}
+        meta = {"duration_seconds": 1000, "width": 100, "height": 100}
+        with patch.object(watch, "download_video", return_value=download), \
+             patch.object(watch, "ffprobe_meta", return_value=meta), \
+             patch.object(watch, "extract_frames", return_value=[]) as extract, \
+             patch.object(watch, "select_whisper_backend", side_effect=AssertionError("credential read without opt-in")), \
+             contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(watch.run_with_frames(args, self.work), 0)
+            self.assertLessEqual(extract.call_args.kwargs["fps"], .01)
+        args.allow_whisper = True
+        self.assertTrue(watch.whisper_allowed(args))
+        args.no_whisper = True
+        self.assertFalse(watch.whisper_allowed(args))
+        for duration in (0, 5, 1000):
+            fps, target = watch._clamp(2, duration, 10)
+            self.assertLessEqual(target, 10)
+            if duration > 0:
+                self.assertLessEqual(fps * duration, 10)
+
+    def test_watch_does_not_use_project_credentials_or_log_provider_errors(self):
+        watch = load(SKILLS / "watch/watch.py", "watch")
+        home = self.work / "home"
+        home.mkdir()
+        (self.work / ".env").write_text("OPENAI_API_KEY=project-test-value", encoding="utf-8")
+        with patch.dict(os.environ, {}, clear=True), patch.object(watch.Path, "home", return_value=home), \
+             patch.object(watch.Path, "cwd", return_value=self.work):
+            self.assertIsNone(watch._read_env_key("OPENAI_API_KEY"))
+        audio = self.work / "audio.mp3"
+        audio.write_bytes(b"test audio")
+        error = urllib.error.HTTPError(watch.OPENAI_ENDPOINT, 401, "test error", {}, io.BytesIO(b"private test response"))
+        output = io.StringIO()
+        with patch.object(watch, "_read_env_key", return_value="test-credential-value"), \
+             patch.object(watch, "urlopen", side_effect=error), contextlib.redirect_stderr(output), \
+             self.assertRaises(SystemExit) as raised:
+            watch._post_whisper("openai", audio)
+        self.assertIn("HTTP 401", str(raised.exception))
+        self.assertNotIn("private test response", str(raised.exception) + output.getvalue())
+        self.assertNotIn("test-credential-value", str(raised.exception) + output.getvalue())
+
+    def test_verify_incomplete_config_and_non_executable_shell_gate(self):
+        runner = SKILLS / "verify/scripts/run-checks.mjs"
+        (self.work / "pyproject.toml").mkdir()
+        command = ["node", str(runner), "--json", "--dir", str(self.work)]
+        result = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        data = json.loads(result.stdout)
+        self.assertEqual(data["verdict"], "incomplete")
+        self.assertEqual(data["checks"][0]["status"], "unavailable")
+        (self.work / "pyproject.toml").rmdir()
+        script = self.work / "tests/test.sh"
+        script.parent.mkdir()
+        script.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        script.chmod(0o644)
+        result = subprocess.run(command, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)["verdict"], "pass")
+        script.write_text('kill -KILL "$$"\n', encoding="utf-8")
+        result = subprocess.run(command, capture_output=True, text=True)
+        data = json.loads(result.stdout)
+        self.assertEqual(data["verdict"], "fail")
+        self.assertIn("SIGKILL", data["checks"][0]["output"])
+        self.assertNotIn("exceeded", data["checks"][0]["output"])
+
+    @unittest.skipUnless(os.name == "posix", "server helper uses POSIX process groups")
+    def test_browser_helper_drains_output_and_stops_child_server(self):
+        helper = SKILLS / "webapp-testing/scripts/with_server.py"
+        with socket.socket() as temporary_socket:
+            temporary_socket.bind(("127.0.0.1", 0))
+            port = temporary_socket.getsockname()[1]
+        server = self.work / "server.py"
+        server.write_text("import socket,sys,time\nsys.stdout.write('x'*200000)\nsys.stdout.flush()\n"
+                          f"s=socket.socket();s.bind(('127.0.0.1',{port}));s.listen()\n"
+                          "while True: time.sleep(.1)\n", encoding="utf-8")
+        command = "cd " + shlex.quote(str(self.work)) + " && " + shlex.quote(sys.executable) + " " + shlex.quote(str(server))
+        result = subprocess.run([sys.executable, str(helper), "--server", command, "--port", str(port), "--timeout", "3",
+                                 "--", sys.executable, "-c", "print('wrapped command finished')"], capture_output=True, text=True, timeout=12)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("wrapped command finished", result.stdout)
+        with self.assertRaises(OSError):
+            with socket.create_connection(("127.0.0.1", port), timeout=.3):
+                pass
 
     def test_mcp_eval_requires_observed_success_and_nonempty_cases(self):
         evaluation = load(SKILLS / "mcp-builder/scripts/evaluation.py", "evaluation")

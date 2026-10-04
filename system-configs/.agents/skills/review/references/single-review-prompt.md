@@ -136,6 +136,7 @@ Write results to .tmp/review-local.json with this schema:
 {
   "schema_version": "1.0",
   "branch": "{current_branch}",
+  "source_sha": "{verified HEAD SHA}",
   "created_at": "{ISO timestamp}",
   "source": "code-reviewer",
   "summary": "Brief overall assessment",
@@ -162,3 +163,5 @@ Write results to .tmp/review-local.json with this schema:
 Report: "Code reviewer found {count} issues"
 
 If no issues found, write empty issues array with summary.
+
+Use the shared artifact contract in ../../resolve-comments/references/schemas.md. Preserve the verified reviewed branch and HEAD SHA in the output.

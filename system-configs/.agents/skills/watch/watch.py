@@ -8,8 +8,8 @@ fetches captions via yt-dlp and prints a clean timestamped transcript. Fast
 Opt-in with --with-frames to also download the video, extract auto-budgeted
 frames, and emit a full report Codex can Read for visual context.
 
-If a video has no captions, falls back to Whisper API (Groq preferred,
-OpenAI fallback) when a key is set in env or ~/.config/watch/.env.
+If a video has no captions, Whisper uploads require explicit --allow-whisper
+or --whisper groq|openai, plus a configured key. Captions-only is the default.
 
 Usage:
   watch.py <url-or-path>
@@ -20,6 +20,7 @@ Usage:
            [--fps F]                        # frames mode only
            [--out-dir DIR]
            [--no-whisper]
+           [--allow-whisper]                # explicitly authorize audio upload
            [--whisper groq|openai]
            [--json]                         # machine-readable transcript output
 
@@ -244,6 +245,8 @@ def ffprobe_meta(video_path):
 
 def _clamp(fps, duration, cap):
     fps = min(fps, MAX_FPS)
+    if duration > 0:
+        fps = min(fps, cap / duration)
     target = min(cap, max(1, int(round(fps * duration))))
     return fps, target
 
@@ -382,7 +385,7 @@ def _read_env_key(name):
     v = os.environ.get(name)
     if v and v.strip():
         return v.strip()
-    for path in (Path.home() / ".config" / "watch" / ".env", Path.cwd() / ".env"):
+    for path in (Path.home() / ".config" / "watch" / ".env",):
         if not path.exists():
             continue
         try:
@@ -403,15 +406,17 @@ def _read_env_key(name):
     return None
 
 
-def load_api_key(preferred=None):
-    candidates = (("GROQ_API_KEY", "groq"), ("OPENAI_API_KEY", "openai"))
-    if preferred:
-        candidates = tuple(c for c in candidates if c[1] == preferred)
-    for key, backend in candidates:
-        v = _read_env_key(key)
-        if v:
-            return backend, v
-    return None, None
+def select_whisper_backend(preferred=None):
+    """Return a public provider label; never return credentials to reporting code."""
+    if preferred in (None, "groq") and _read_env_key("GROQ_API_KEY"):
+        return "groq"
+    if preferred in (None, "openai") and _read_env_key("OPENAI_API_KEY"):
+        return "openai"
+    return None
+
+
+def whisper_allowed(args):
+    return not args.no_whisper and (args.allow_whisper or args.whisper is not None)
 
 
 def extract_audio_from_video(video_path, out_path):
@@ -453,7 +458,16 @@ def _multipart(fields, file_path):
     return buf.getvalue(), boundary
 
 
-def _post_whisper(endpoint, api_key, model, audio):
+def _post_whisper(backend, audio):
+    if backend == "groq":
+        endpoint, model, credential_name = GROQ_ENDPOINT, GROQ_MODEL, "GROQ_API_KEY"
+    elif backend == "openai":
+        endpoint, model, credential_name = OPENAI_ENDPOINT, OPENAI_MODEL, "OPENAI_API_KEY"
+    else:
+        raise SystemExit("Unsupported Whisper provider")
+    api_key = _read_env_key(credential_name)
+    if not api_key:
+        raise SystemExit("Whisper provider has no configured credential")
     body, boundary = _multipart(
         {"model": model, "response_format": "verbose_json", "temperature": "0"},
         audio,
@@ -472,16 +486,12 @@ def _post_whisper(endpoint, api_key, model, audio):
                 payload = resp.read().decode("utf-8", errors="replace")
             return json.loads(payload)
         except urllib.error.HTTPError as exc:
-            detail = ""
-            try:
-                detail = f" — {exc.read().decode('utf-8', errors='replace')[:400]}"
-            except Exception:
-                pass
-            last = f"HTTP {exc.code}{detail}"
+            # Provider error bodies may echo credentials or private audio data.
+            last = f"HTTP {exc.code}"
             if 400 <= exc.code < 500 and exc.code != 429:
                 raise SystemExit(f"Whisper request failed: {last}")
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            last = f"{type(exc).__name__}: {exc}"
+        except (urllib.error.URLError, TimeoutError, OSError):
+            last = "network request failed"
         if attempt < 3:
             delay = 2.0 * (2 ** attempt)
             print(f"[watch] whisper retry in {delay:.1f}s ({last})", file=sys.stderr)
@@ -489,13 +499,10 @@ def _post_whisper(endpoint, api_key, model, audio):
     raise SystemExit(f"Whisper failed after 4 attempts: {last}")
 
 
-def whisper_transcribe(audio_path, backend, api_key):
+def whisper_transcribe(audio_path, backend):
     print(f"[watch] uploading {audio_path.stat().st_size // 1024} kB to {backend}",
           file=sys.stderr)
-    endpoint, model = (
-        (GROQ_ENDPOINT, GROQ_MODEL) if backend == "groq" else (OPENAI_ENDPOINT, OPENAI_MODEL)
-    )
-    data = _post_whisper(endpoint, api_key, model, audio_path)
+    data = _post_whisper(backend, audio_path)
     segs = []
     for s in data.get("segments") or []:
         txt = (s.get("text") or "").strip()
@@ -551,9 +558,9 @@ def run_transcript_only(args, work):
         segments = filter_range(segments, start, end)
 
     # Whisper fallback for transcript-only: audio-only download + whisper.
-    if not segments and not args.no_whisper:
-        backend, key = load_api_key(args.whisper)
-        if backend and key:
+    if not segments and whisper_allowed(args):
+        backend = select_whisper_backend(args.whisper)
+        if backend:
             try:
                 if is_url(source):
                     print("[watch] no captions; downloading audio for Whisper…",
@@ -561,7 +568,7 @@ def run_transcript_only(args, work):
                     audio = fetch_audio_only(source, work / "audio")
                 else:
                     audio = extract_audio_from_video(source, work / "audio.mp3")
-                allsegs = whisper_transcribe(audio, backend, key)
+                allsegs = whisper_transcribe(audio, backend)
                 segments = filter_range(allsegs, start, end) if (start is not None or end is not None) else allsegs
                 source_label = f"whisper ({backend})"
             except SystemExit as exc:
@@ -582,10 +589,9 @@ def run_transcript_only(args, work):
 
     if not segments:
         print(f"[watch] ERROR: no transcript available for {source}", file=sys.stderr)
-        print("        (captions missing; Whisper unavailable — set GROQ_API_KEY or",
+        print("        (Whisper requires explicit --allow-whisper or --whisper provider,",
               file=sys.stderr)
-        print("         OPENAI_API_KEY in ~/.config/watch/.env, or omit --no-whisper)",
-              file=sys.stderr)
+        print("         plus an authorized configured credential)", file=sys.stderr)
         return 2
 
     print()
@@ -637,8 +643,7 @@ def run_with_frames(args, work):
 
     fps, target = (auto_fps_focus(eff_dur, cap) if focused else auto_fps(eff_dur, cap))
     if args.fps is not None:
-        fps = min(args.fps, MAX_FPS)
-        target = max(1, int(round(fps * eff_dur)))
+        fps, target = _clamp(args.fps, eff_dur, cap)
 
     scope = (f"{format_time(eff_start)}-{format_time(eff_end)} ({eff_dur:.1f}s)"
              if focused else f"full {eff_dur:.1f}s")
@@ -658,12 +663,12 @@ def run_with_frames(args, work):
         except Exception as exc:
             print(f"[watch] vtt parse failed: {exc}", file=sys.stderr)
 
-    if not segments and not args.no_whisper:
-        backend, key = load_api_key(args.whisper)
-        if backend and key:
+    if not segments and whisper_allowed(args):
+        backend = select_whisper_backend(args.whisper)
+        if backend:
             try:
                 audio = extract_audio_from_video(video, work / "audio.mp3")
-                allsegs = whisper_transcribe(audio, backend, key)
+                allsegs = whisper_transcribe(audio, backend)
                 segments = filter_range(allsegs, start, end) if focused else allsegs
                 source_label = f"whisper ({backend})"
             except SystemExit as exc:
@@ -744,11 +749,18 @@ def main():
     ap.add_argument("--start", type=str, default=None)
     ap.add_argument("--end", type=str, default=None)
     ap.add_argument("--out-dir", type=str, default=None)
-    ap.add_argument("--no-whisper", action="store_true")
-    ap.add_argument("--whisper", choices=["groq", "openai"], default=None)
+    uploads = ap.add_mutually_exclusive_group()
+    uploads.add_argument("--no-whisper", action="store_true", help="Disable audio uploads (the default)")
+    uploads.add_argument("--allow-whisper", action="store_true", help="Explicitly allow audio upload when captions are missing")
+    ap.add_argument("--whisper", choices=["groq", "openai"], default=None,
+                    help="Explicitly allow audio upload using this provider")
     ap.add_argument("--json", action="store_true",
                     help="Transcript-only: emit machine-readable JSON.")
     args = ap.parse_args()
+    if args.no_whisper and args.whisper:
+        ap.error("--no-whisper cannot be combined with --whisper")
+    if args.max_frames < 1 or (args.fps is not None and args.fps <= 0):
+        ap.error("--max-frames and --fps must be positive")
 
     work = Path(args.out_dir).expanduser().resolve() if args.out_dir \
         else Path(tempfile.mkdtemp(prefix="watch-"))

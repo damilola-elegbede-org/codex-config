@@ -104,8 +104,15 @@ function detectChecks(dir) {
 
   // Python
   if (has("pyproject.toml") || has("setup.cfg") || has("requirements.txt")) {
-    if (has("pyproject.toml") && readFileSync(join(dir, "pyproject.toml"), "utf8").includes("ruff")) {
-      checks.push({ id: "ruff", cmd: "ruff", args: ["check", "."], why: "ruff configured in pyproject.toml" });
+    if (has("pyproject.toml")) {
+      try {
+        if (readFileSync(join(dir, "pyproject.toml"), "utf8").includes("ruff")) {
+          checks.push({ id: "ruff", cmd: "ruff", args: ["check", "."], why: "ruff configured in pyproject.toml" });
+        }
+      } catch {
+        checks.push({ id: "ruff", cmd: "ruff", args: ["check", "."], why: "pyproject.toml present",
+          unavailable: "Cannot read pyproject.toml; configured Python gates are unknown." });
+      }
     }
     // A tests/ directory is not evidence of pytest — this repo's tests/ holds shell
     // scripts, and pytest would exit 5 ("no tests ran"), which reads as a failure.
@@ -142,7 +149,7 @@ function detectChecks(dir) {
 
   // Repo-local test entrypoint that isn't wired into package.json.
   if (!scripts.test && has("tests/test.sh")) {
-    checks.push({ id: "test-sh", cmd: "./tests/test.sh", args: [], why: "tests/test.sh present" });
+    checks.push({ id: "test-sh", cmd: "sh", args: ["tests/test.sh"], why: "tests/test.sh present" });
   }
 
   return checks;
@@ -157,6 +164,9 @@ const GATE_TIMEOUT_MS =
 
 function runCheck(check, dir) {
   const started = Date.now();
+  if (check.unavailable) {
+    return { ...check, status: "unavailable", detail: check.unavailable, ms: Date.now() - started };
+  }
   const res = spawnSync(check.cmd, check.args, {
     cwd: dir,
     encoding: "utf8",
@@ -167,7 +177,7 @@ function runCheck(check, dir) {
 
   // A gate that hangs must fail, not wedge the caller. Without this, /verify —
   // and therefore ship-it's pre-commit gate — waits forever on a stuck suite.
-  if (res.error?.code === "ETIMEDOUT" || res.signal === "SIGKILL") {
+  if (res.error?.code === "ETIMEDOUT") {
     return {
       ...check,
       status: "fail",
@@ -175,6 +185,10 @@ function runCheck(check, dir) {
       output: `Gate exceeded ${GATE_TIMEOUT_MS}ms and was killed.`,
       ms: Date.now() - started,
     };
+  }
+  if (res.signal === "SIGKILL") {
+    return { ...check, status: "fail", exitCode: null,
+      output: "Gate terminated by SIGKILL; no time limit failure was reported.", ms: Date.now() - started };
   }
 
   // Truncated output means we cannot tell pass from fail. Treat as failure:

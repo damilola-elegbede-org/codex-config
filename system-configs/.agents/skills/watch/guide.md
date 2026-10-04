@@ -71,8 +71,9 @@ to a denser frame budget.
 
 | Flag | Purpose |
 |------|---------|
-| `--no-whisper` | Don't fall back to Whisper if captions are missing. Fail with a clear error instead. |
-| `--whisper groq\|openai` | Force a Whisper backend. Default: prefer Groq, fall back to OpenAI. |
+| `--no-whisper` | Explicitly disable audio uploads; captions-only is already the default. |
+| `--allow-whisper` | Explicitly authorize an audio upload when captions are missing. Prefer configured Groq, otherwise OpenAI. |
+| `--whisper groq\|openai` | Explicitly authorize an audio upload and choose this provider. |
 | `--max-frames N` | (frames mode) Cap on frame count. Default 80, hard max 100. |
 | `--resolution W` | (frames mode) Frame width in px. Default 512. Bump to 1024 only if reading on-screen text matters. |
 | `--fps F` | (frames mode) Override auto-fps (clamped to 2 fps). |
@@ -82,20 +83,21 @@ to a denser frame budget.
 ## When the script needs Whisper
 
 If a video has no captions (rare for YouTube, common for Loom / Instagram / local files) and
-you didn't pass `--no-whisper`, the script will:
+you explicitly pass `--allow-whisper` or `--whisper groq|openai`, the script will:
 
 1. Download audio only (transcript-only mode) or extract from the downloaded video (`--with-frames`)
 2. Upload it to Groq's `whisper-large-v3` (preferred — cheap, fast) or OpenAI's `whisper-1`
 3. Return the same `[MM:SS]` timestamped format
 
-To enable Whisper, set one of these (script reads env vars or `~/.config/watch/.env`):
+A configured key alone never authorizes uploading audio. After the user authorizes
+transcription, pass an opt-in flag and configure one of these (script reads env vars or `~/.config/watch/.env`):
 
 ```text
 GROQ_API_KEY=...        # console.groq.com/keys
 OPENAI_API_KEY=...      # platform.openai.com/api-keys
 ```
 
-If neither key is set and captions are missing, the script exits 2 with a clear message — tell
+Without explicit opt-in or a configured key, when captions are missing, the script exits 2 with a clear message — tell
 the user how to enable Whisper or that this particular video can't be transcribed.
 
 ## Output flow

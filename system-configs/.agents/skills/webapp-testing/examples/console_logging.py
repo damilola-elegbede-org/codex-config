@@ -1,10 +1,13 @@
 from playwright.sync_api import sync_playwright
+from pathlib import Path
 
 # Example: Capturing console logs during browser automation
 
 url = 'http://localhost:5173'  # Replace with your URL
 
 console_logs = []
+output_dir = Path.cwd() / "outputs"
+output_dir.mkdir(parents=True, exist_ok=True)
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
@@ -28,8 +31,8 @@ with sync_playwright() as p:
     browser.close()
 
 # Save console logs to file
-with open('/mnt/user-data/outputs/console.log', 'w') as f:
+with (output_dir / 'console.log').open('w', encoding='utf-8') as f:
     f.write('\n'.join(console_logs))
 
 print(f"\nCaptured {len(console_logs)} console messages")
-print(f"Logs saved to: /mnt/user-data/outputs/console.log")
+print(f"Logs saved to: {output_dir / 'console.log'}")

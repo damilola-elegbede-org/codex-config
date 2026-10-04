@@ -34,6 +34,7 @@ Write your findings to .tmp/review-code.json using this schema:
 {
   "schema_version": "1.0",
   "branch": "{current_branch}",
+  "source_sha": "{verified HEAD SHA}",
   "created_at": "{ISO timestamp}",
   "source": "code-reviewer",
   "summary": "Brief overall assessment",
@@ -54,3 +55,5 @@ Write your findings to .tmp/review-code.json using this schema:
 
 Use the assertive review profile: no hedging, imperative language,
 focus exclusively on problems.
+
+Use the shared artifact contract in ../../resolve-comments/references/schemas.md. Preserve the verified reviewed branch and HEAD SHA in the output.

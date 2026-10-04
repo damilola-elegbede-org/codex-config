@@ -1,1 +1,4 @@
-mcp>=1.1.0
+# Retained connection helper uses the supported v1 API; defer v2 until migrated.
+mcp>=1.28,<2
+python-multipart>=0.0.30
+# Multipart floor: GHSA-vffw-93wf-4j4q and GHSA-6jv3-5f52-599m (patched in 0.0.30).

@@ -75,7 +75,9 @@ before installation; review and relocate the custom copy rather than forcing it.
 An identical existing copy can be adopted. Ownership hashes are stored in
 `$CODEX_HOME/.codex-config-managed-extensions.json`; backups of changed resources
 live under `extensions/skills/` and `extensions/agents/` in the normal backup.
-Removed source extensions are deliberately not deleted automatically.
+Installed extension files and ownership metadata are readable/writable only by
+the owner; executable helpers retain owner execution. Removed source extensions
+are deliberately not deleted automatically.
 
 `CODEX_CONFIG_SKILLS_SOURCE` overrides the skill source; otherwise it is the
 `.agents/skills` sibling of `CODEX_CONFIG_SOURCE`. `CODEX_SKILLS_HOME` overrides

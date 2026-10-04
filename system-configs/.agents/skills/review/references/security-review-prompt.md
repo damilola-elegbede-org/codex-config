@@ -34,6 +34,7 @@ Write your findings to .tmp/review-security.json using this schema:
 {
   "schema_version": "1.0",
   "branch": "{current_branch}",
+  "source_sha": "{verified HEAD SHA}",
   "created_at": "{ISO timestamp}",
   "source": "security-reviewer",
   "summary": "Security assessment",
@@ -53,3 +54,5 @@ Write your findings to .tmp/review-security.json using this schema:
 ```
 
 Severity escalation: any issue in auth/payment/PII code → escalate one level.
+
+Use the shared artifact contract in ../../resolve-comments/references/schemas.md. Preserve the verified reviewed branch and HEAD SHA in the output.
