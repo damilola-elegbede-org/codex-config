@@ -7,7 +7,7 @@ trap 'rm -rf "$WORK"' EXIT HUP INT TERM
 TEST_HOME="$WORK/home"
 LIVE="$WORK/live"
 SOURCE="$WORK/source/.codex"
-mkdir -p "$TEST_HOME" "$LIVE" "$SOURCE" "$WORK/bin"
+mkdir -p "$TEST_HOME" "$LIVE" "$SOURCE/agents" "$WORK/source/.agents/skills" "$WORK/bin"
 
 printf '%s\n' '#!/bin/sh' \
   'if grep -R "^bad_key" "$CODEX_HOME" >/dev/null 2>&1; then' \

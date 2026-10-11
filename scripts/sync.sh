@@ -62,6 +62,15 @@ case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;;
 case " $OWNED_KEYS " in
     *" projects "*|*" notice.model_migrations "*|*" tui.model_availability_nux "*) die_preflight "manifest attempts to own a never-owned Codex table" ;;
 esac
+if [ "$AGENTS_MD" = true ] && [ ! -f "$SOURCE_CODEX/AGENTS.md" ]; then
+    die_preflight "missing $SOURCE_CODEX/AGENTS.md (agents_md is enabled)"
+fi
+if [ "$SKILLS" = true ] && [ ! -d "$SOURCE_SKILLS" ]; then
+    die_preflight "missing directory $SOURCE_SKILLS (skills is enabled)"
+fi
+if [ "$AGENTS" = true ] && [ ! -d "$SOURCE_CODEX/agents" ]; then
+    die_preflight "missing directory $SOURCE_CODEX/agents (agents is enabled)"
+fi
 
 # Local-ref check only: it never fetches or invokes a network Git operation.
 if [ "$FORCE" = false ] && git -C "$ROOT" rev-parse --verify -q origin/main >/dev/null; then

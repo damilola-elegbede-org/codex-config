@@ -69,6 +69,9 @@ shared office resources, and `system-configs/.codex/agents/*.toml` into
 `$CODEX_HOME/agents/`. Every machine installs these by default, including unknown
 auto-detected hosts. Manifest keys `skills: false`
 and `agents: false` skip those future updates without deleting installed files.
+Enabled global instructions, skills, and agents require their source file or
+directory to exist, including with source overrides. Missing sources fail
+preflight before any live files change.
 
 Only shipped paths are managed. Unrelated skills, agents, and extra files are
 preserved. A conflicting unmanaged or locally modified shipped file stops sync

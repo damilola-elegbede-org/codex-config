@@ -380,6 +380,41 @@ class Extensions(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assert_full_configuration(test_home)
 
+    def test_missing_enabled_sources_fail_before_writing(self):
+        repo = self.work / "repo"
+        shutil.copytree(ROOT / "scripts", repo / "scripts")
+        (repo / "sync-manifests").mkdir()
+        for key, relative in (("agents_md", ".codex/AGENTS.md"),
+                              ("skills", ".agents/skills"), ("agents", ".codex/agents")):
+            with self.subTest(surface=key):
+                source = self.work / f"{key}-source"
+                shutil.copytree(ROOT / "system-configs", source)
+                missing = source / relative
+                if missing.is_dir():
+                    shutil.rmtree(missing)
+                else:
+                    missing.unlink()
+                test_home, env = self.sync_environment(home_name=key)
+                env["CODEX_CONFIG_SOURCE"] = str(source / ".codex")
+                config = test_home / ".codex/config.toml"
+                config.parent.mkdir(parents=True)
+                config.write_text('model = "keep-local"\n')
+                manifest = repo / "sync-manifests/generic-auto-host.json"
+                manifest.unlink(missing_ok=True)
+                command = [str(repo / "scripts/sync.sh"), "--force"]
+                for flags in (["--dry-run"], []):
+                    result = subprocess.run(command + flags, env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertIn("pre-flight:", result.stderr)
+                    self.assertIn(str(missing), result.stderr)
+                    self.assertEqual(config.read_text(), 'model = "keep-local"\n')
+                    self.assertEqual({path.relative_to(test_home).as_posix()
+                                      for path in test_home.rglob("*")},
+                                     {".codex", ".codex/config.toml"})
+                manifest.write_text(json.dumps({"sync": {key: False}}))
+                result = subprocess.run(command, env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_manifest_overrides_are_independent_and_preserve_installed_files(self):
         repo = self.work / "repo"
         shutil.copytree(ROOT / "scripts", repo / "scripts")
