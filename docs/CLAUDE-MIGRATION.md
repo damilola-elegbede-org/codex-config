@@ -51,9 +51,13 @@ already a Codex skill and is separate from this system configuration inventory.
 
 ## Sync and verification
 
-`skills` and `agents` follow the global-instructions station boundary. The Mini’s
-empty exceptions file inherits all three. Unknown automatically detected hosts
-receive none. Existing model, response style, TUI, and tmux policy are unchanged.
+Every machine receives the complete owned configuration, global instructions,
+skills, and agents by default, including unknown automatically detected hosts.
+Station manifests retain explicit overrides: `skills: false`, `agents: false`,
+and `agents_md: false` skip future updates without deleting installed files.
+The Mini’s empty exceptions file inherits the full defaults. Station selection
+does not restrict a rollout when no overrides exist. Shipped model, response
+style, TUI, and tmux policy are unchanged.
 Sync validates all staged extensions before installing config, records ownership,
 backs up changed owned files, publishes resources before skill entrypoints, and
 uses atomic replacement per file. It checks hashes again before installation.

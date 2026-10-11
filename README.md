@@ -50,9 +50,10 @@ It also owns the file profiles that it ships (`think.config.toml`,
 fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
+Every machine inherits all repository-owned settings, profiles, global instructions,
+skills, and agents unless its station manifest overrides those defaults.
 The checked-in Mac Mini manifest has an empty override set (`"sync": {}`),
-so it inherits all repository-owned settings, profiles, and global instructions,
-including the native status line and full-access defaults (`approval_policy =
+so it also receives the native status line and full-access defaults (`approval_policy =
 "never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
 also apply to fleet processes that do not supply higher-priority overrides.
 
@@ -65,9 +66,12 @@ from `claude-config` at `cb257acb72ef568efc5d9dc2c25c365b179383b0`.
 
 Sync installs `system-configs/.agents/skills/` into `~/.agents/skills/`, including
 shared office resources, and `system-configs/.codex/agents/*.toml` into
-`$CODEX_HOME/agents/`. Recognized or explicitly selected stations install these
-by default; unknown auto-detected hosts do not. Manifest keys `skills: false`
+`$CODEX_HOME/agents/`. Every machine installs these by default, including unknown
+auto-detected hosts. Manifest keys `skills: false`
 and `agents: false` skip those future updates without deleting installed files.
+Enabled global instructions, skills, and agents require their source file or
+directory to exist, including with source overrides. Missing sources fail
+preflight before any live files change.
 
 Only shipped paths are managed. Unrelated skills, agents, and extra files are
 preserved. A conflicting unmanaged or locally modified shipped file stops sync
@@ -121,13 +125,12 @@ scripts/sync.sh
 Sync stages and validates first, makes an owned-only timestamped backup, then
 atomically replaces each owned file and validates again. `--no-backup` disables
 that backup; `--force` bypasses the local `origin/main` freshness comparison.
-Station manifests scope fleet-sensitive surfaces. On a host without a manifest,
-laptop-first defaults apply only when `CODEX_CONFIG_STATION` is explicitly set,
-for example `CODEX_CONFIG_STATION=laptop scripts/sync.sh`. An unrecognized,
-auto-detected host instead receives the restricted key set (`model`,
-`model_reasoning_effort`, and `web_search`) without global `AGENTS.md`, migrated skills, or custom agents.
-Recognized or explicitly selected stations install the shipped `AGENTS.md` by
-default. A manifest's `agents_md: false` skips future instruction updates;
+Station manifests provide explicit exceptions to the full defaults. Set
+`CODEX_CONFIG_STATION` to select a manifest; an unset or empty value uses the
+detected hostname. Hosts without a manifest receive the same complete rollout.
+A manifest's `config_owned_keys` limits managed settings, and `profiles: false`
+skips profile updates. The shipped `AGENTS.md` installs by default on every
+machine. A manifest's `agents_md: false` skips future instruction updates;
 it does not remove an already installed `AGENTS.md` or disable its behavior.
 The checked-in Mini manifest
 has no exceptions: it inherits all repository-owned settings and profiles.

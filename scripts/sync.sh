@@ -28,10 +28,8 @@ if [ ! -f "$SOURCE_CODEX/config.toml" ]; then die_preflight "missing $SOURCE_COD
 
 if [ -n "${CODEX_CONFIG_STATION:-}" ]; then
     STATION=$CODEX_CONFIG_STATION
-    EXPLICIT_STATION=true
 else
     STATION=$(scutil --get LocalHostName 2>/dev/null || hostname -s)
-    EXPLICIT_STATION=false
 fi
 MANIFEST="$ROOT/sync-manifests/$STATION.json"
 if [ -f "$MANIFEST" ] && ! python3 -c 'import json,sys; json.load(open(sys.argv[1]))' "$MANIFEST" >/dev/null 2>&1; then
@@ -53,24 +51,26 @@ PY
 }
 CONFIG_MODE=$(manifest_value config merge)
 ALL_OWNED_KEYS="model model_reasoning_effort web_search approval_policy sandbox_mode tui"
-SAFE_OWNED_KEYS="model model_reasoning_effort web_search"
-if [ -f "$MANIFEST" ] || [ "$EXPLICIT_STATION" = true ]; then
-    OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
-    DEFAULT_AGENTS_MD=true
-else
-    OWNED_KEYS=$SAFE_OWNED_KEYS
-    DEFAULT_AGENTS_MD=false
-fi
+OWNED_KEYS=$(manifest_value config_owned_keys "$ALL_OWNED_KEYS")
 PROFILES=$(manifest_value profiles true)
-AGENTS_MD=$(manifest_value agents_md "$DEFAULT_AGENTS_MD")
-SKILLS=$(manifest_value skills "$DEFAULT_AGENTS_MD")
-AGENTS=$(manifest_value agents "$DEFAULT_AGENTS_MD")
+AGENTS_MD=$(manifest_value agents_md true)
+SKILLS=$(manifest_value skills true)
+AGENTS=$(manifest_value agents true)
 RULES=$(manifest_value rules false)
 HOOKS=$(manifest_value hooks false)
 case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac
 case " $OWNED_KEYS " in
     *" projects "*|*" notice.model_migrations "*|*" tui.model_availability_nux "*) die_preflight "manifest attempts to own a never-owned Codex table" ;;
 esac
+if [ "$AGENTS_MD" = true ] && [ ! -f "$SOURCE_CODEX/AGENTS.md" ]; then
+    die_preflight "missing $SOURCE_CODEX/AGENTS.md (agents_md is enabled)"
+fi
+if [ "$SKILLS" = true ] && [ ! -d "$SOURCE_SKILLS" ]; then
+    die_preflight "missing directory $SOURCE_SKILLS (skills is enabled)"
+fi
+if [ "$AGENTS" = true ] && [ ! -d "$SOURCE_CODEX/agents" ]; then
+    die_preflight "missing directory $SOURCE_CODEX/agents (agents is enabled)"
+fi
 
 # Local-ref check only: it never fetches or invokes a network Git operation.
 if [ "$FORCE" = false ] && git -C "$ROOT" rev-parse --verify -q origin/main >/dev/null; then

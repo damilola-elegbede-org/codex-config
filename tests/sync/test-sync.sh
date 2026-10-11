@@ -4,10 +4,10 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT HUP INT TERM
-HOME="$WORK/home"
+TEST_HOME="$WORK/home"
 LIVE="$WORK/live"
 SOURCE="$WORK/source/.codex"
-mkdir -p "$HOME" "$LIVE" "$SOURCE" "$WORK/bin"
+mkdir -p "$TEST_HOME" "$LIVE" "$SOURCE/agents" "$WORK/source/.agents/skills" "$WORK/bin"
 
 printf '%s\n' '#!/bin/sh' \
   'if grep -R "^bad_key" "$CODEX_HOME" >/dev/null 2>&1; then' \
@@ -64,9 +64,9 @@ printf '%s\n' 'user theme' > "$LIVE/themes/personal.tmTheme"
 mkdir -p "$WORK/generic-auto"
 cp "$LIVE/config.toml" "$WORK/generic-auto/config.toml"
 unset CODEX_CONFIG_STATION
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/generic-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/generic-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
   "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/generic-auto.out"
-[ ! -e "$WORK/generic-auto/AGENTS.md" ]
+cmp "$SOURCE/AGENTS.md" "$WORK/generic-auto/AGENTS.md"
 python3 - "$WORK/generic-auto/config.toml" <<'PY'
 import sys
 import tomllib
@@ -76,15 +76,21 @@ with open(sys.argv[1], "rb") as source:
 assert config["model"] == "new"
 assert config["model_reasoning_effort"] == "high"
 assert config["web_search"] == "live"
-assert config["approval_policy"] == "on-request"
-assert config["sandbox_mode"] == "workspace-write"
-assert config["tui"]["status_line"] == ["old-status"]
+assert config["approval_policy"] == "never"
+assert config["sandbox_mode"] == "danger-full-access"
+assert config["tui"]["status_line"] == [
+    "thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress",
+]
+assert config["projects"] == {"/private/project": {"trust_level": "trusted"}}
+assert config["notice"]["model_migrations"] == {"old": "new"}
+assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
 
 mkdir -p "$WORK/empty-station-auto"
 cp "$LIVE/config.toml" "$WORK/empty-station-auto/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/empty-station-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/empty-station-auto" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION="" "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/empty-station-auto.out"
+cmp "$SOURCE/AGENTS.md" "$WORK/empty-station-auto/AGENTS.md"
 python3 - "$WORK/empty-station-auto/config.toml" <<'PY'
 import sys
 import tomllib
@@ -94,12 +100,17 @@ with open(sys.argv[1], "rb") as source:
 assert config["model"] == "new"
 assert config["model_reasoning_effort"] == "high"
 assert config["web_search"] == "live"
-assert config["approval_policy"] == "on-request"
-assert config["sandbox_mode"] == "workspace-write"
-assert config["tui"]["status_line"] == ["old-status"]
+assert config["approval_policy"] == "never"
+assert config["sandbox_mode"] == "danger-full-access"
+assert config["tui"]["status_line"] == [
+    "thread-name", "model-with-reasoning", "git-branch", "current-dir", "context-used", "task-progress",
+]
+assert config["projects"] == {"/private/project": {"trust_level": "trusted"}}
+assert config["notice"]["model_migrations"] == {"old": "new"}
+assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
 
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/sync.out"
 grep -q 'model = "new"' "$LIVE/config.toml"
 grep -q 'approval_policy = "never"' "$LIVE/config.toml"
@@ -127,7 +138,7 @@ assert config["tui"]["status_line"] == [
 assert config["tui"]["model_availability_nux"] == {"old": 1}
 PY
 grep -q 'model = "unknown"' "$LIVE/custom.config.toml"
-backup=$(find "$HOME" -maxdepth 1 -type d -name '.codex-config.backup.*' -print | head -n 1)
+backup=$(find "$TEST_HOME" -maxdepth 1 -type d -name '.codex-config.backup.*' -print | head -n 1)
 [ -f "$backup/config.toml" ]
 [ ! -e "$backup/auth.json" ]
 [ ! -e "$backup/sessions" ]
@@ -143,7 +154,7 @@ theme_before=$(cksum "$LIVE/themes/example.tmTheme")
 agents_before=$(cksum "$LIVE/AGENTS.md")
 printf '%s\n' 'Updated Executive response instructions' > "$SOURCE/AGENTS.md"
 cp "$SOURCE/themes/example.tmTheme" "$SOURCE/themes/new-preview.tmTheme"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --dry-run >"$WORK/dry.out"
 after=$(cksum "$LIVE/config.toml")
 [ "$before" = "$after" ]
@@ -155,7 +166,7 @@ grep -q 'would install theme: themes/new-preview.tmTheme' "$WORK/dry.out"
 grep -q 'dry-run: validated staging; no files were written' "$WORK/dry.out"
 
 printf '%s\n' 'model = "newer"' > "$SOURCE/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/drop.out"
 grep -q 'model = "newer"' "$LIVE/config.toml"
 if grep -q '^web_search[[:space:]]*=' "$LIVE/config.toml"; then
@@ -165,7 +176,7 @@ fi
 
 printf '%s\n' 'bad_key = true' > "$SOURCE/config.toml"
 before=$(cksum "$LIVE/config.toml")
-if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+if PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/bad.out" 2>&1; then
     echo "invalid staged config unexpectedly installed" >&2
     exit 1
@@ -192,7 +203,7 @@ printf '%s\n' \
   '' \
   '[tui]' \
   'status_line = ["mini-status"]' > "$WORK/mini/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/mini" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/mini" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=damilola-mbm "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/mini.out"
 grep -q 'model = "newer"' "$WORK/mini/config.toml"
 grep -q 'approval_policy = "never"' "$WORK/mini/config.toml"
@@ -212,7 +223,7 @@ printf '%s\n' \
   '' \
   '[tui.model_availability_nux]' \
   'old = 1' > "$WORK/alternate-header/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/alternate-header" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/alternate-header" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/alternate-header.out"
 python3 - "$WORK/alternate-header/config.toml" <<'PY'
 import sys
@@ -244,7 +255,7 @@ printf '%s\n' \
   '' \
   '[tui.model_availability_nux]' \
   'old = 1' > "$WORK/quoted-header/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/quoted-header" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/quoted-header" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/quoted-header.out"
 python3 - "$WORK/quoted-header/config.toml" <<'PY'
 import sys
@@ -280,7 +291,7 @@ printf '%s\n' \
   'tui.status_line = ["string-content"]' \
   '[tui]' \
   '"""' > "$WORK/dotted-tui/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/dotted-tui.out"
 python3 - "$WORK/dotted-tui/config.toml" <<'PY'
 import sys
@@ -316,7 +327,7 @@ printf '%s\n' \
   '[tui]' \
   '"""' \
   'web_search = "cached"' > "$WORK/multiline-dotted-tui/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/multiline-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/multiline-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/multiline-dotted-tui.out"
 python3 -c 'import sys, tomllib; tomllib.load(open(sys.argv[1], "rb"))' \
   "$WORK/multiline-dotted-tui/config.toml"
@@ -348,7 +359,7 @@ printf '%s\n' \
   '' \
   '[profiles.custom]' \
   'tui.status_line = ["custom-status"]' > "$WORK/profile-dotted-tui/config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$WORK/profile-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$WORK/profile-dotted-tui" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/profile-dotted-tui.out"
 python3 - "$WORK/profile-dotted-tui/config.toml" <<'PY'
 import sys
@@ -364,7 +375,7 @@ printf '%s\n' \
   'model_reasoning_effort = "high"' > "$SOURCE/config.toml"
 [ -f "$LIVE/think.config.toml" ] || { echo "expected think.config.toml before removal test" >&2; exit 1; }
 rm -f "$SOURCE/think.config.toml"
-PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force >"$WORK/remove.out"
 if [ -e "$LIVE/think.config.toml" ]; then
     echo "stale profile think.config.toml was not removed after deletion from source" >&2
@@ -372,7 +383,7 @@ if [ -e "$LIVE/think.config.toml" ]; then
 fi
 grep -q 'model = "unknown"' "$LIVE/custom.config.toml"
 found_backup=0
-for b in "$HOME"/.codex-config.backup.*; do
+for b in "$TEST_HOME"/.codex-config.backup.*; do
     [ -d "$b" ] || continue
     [ -f "$b/think.config.toml" ] && found_backup=1
 done
@@ -381,7 +392,7 @@ done
 before=$(cksum "$LIVE/config.toml")
 theme_before=$(cksum "$LIVE/themes/example.tmTheme")
 printf '%s\n' 'invalid theme' > "$SOURCE/themes/example.tmTheme"
-if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+if PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/bad-theme.out" 2>&1; then
     echo "invalid staged theme unexpectedly installed" >&2
     exit 1
@@ -394,7 +405,7 @@ import plistlib, sys
 with open(sys.argv[1], "wb") as target:
     plistlib.dump({"name": "Invalid empty theme", "settings": []}, target)
 PY
-if PATH="$WORK/bin:$PATH" HOME="$HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
+if PATH="$WORK/bin:$PATH" HOME="$TEST_HOME" CODEX_HOME="$LIVE" CODEX_CONFIG_SOURCE="$SOURCE" \
   CODEX_CONFIG_STATION=test-no-manifest "$ROOT/scripts/sync.sh" --force --no-backup >"$WORK/empty-theme.out" 2>&1; then
     echo "empty theme unexpectedly installed" >&2
     exit 1
