@@ -1,0 +1,15 @@
+--- a/scripts/sync.sh
++++ b/scripts/sync.sh
+@@ -52,6 +52,12 @@
+ AGENTS_MD=$(manifest_value agents_md true)
+ SKILLS=$(manifest_value skills true)
+ AGENTS=$(manifest_value agents true)
++if [ ! -f "$MANIFEST" ] && [ -z "${CODEX_CONFIG_STATION:-}" ]; then
++    OWNED_KEYS="model model_reasoning_effort web_search"
++    AGENTS_MD=false
++    SKILLS=false
++    AGENTS=false
++fi
+ RULES=$(manifest_value rules false)
+ HOOKS=$(manifest_value hooks false)
+ case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac

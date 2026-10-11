@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 import contextlib
 import io
 import shlex
+import shutil
 import signal
 import socket
 import sys
@@ -329,23 +330,95 @@ class Extensions(unittest.TestCase):
         with self.assertRaises(ET.ParseError):
             checker.check(path)
 
-    def test_full_sync_dry_run_and_install(self):
+    def sync_environment(self, station=None, home_name="home"):
         codex = self.work / "bin/codex"
-        codex.parent.mkdir()
+        codex.parent.mkdir(exist_ok=True)
         codex.write_text('#!/bin/sh\necho "Model provider __nonexistent__ not found" >&2\nexit 1\n')
         codex.chmod(0o755)
-        env = dict(os.environ, PATH=str(codex.parent) + os.pathsep + os.environ["PATH"], HOME=str(self.work / "home"),
-                   CODEX_HOME=str(self.live / ".codex"), CODEX_SKILLS_HOME=str(self.live / "skills"),
-                   CODEX_CONFIG_SOURCE=str(ROOT / "system-configs/.codex"), CODEX_CONFIG_SKILLS_SOURCE=str(SKILLS), CODEX_CONFIG_STATION="test-extensions")
+        for name in ("scutil", "hostname"):
+            detector = codex.parent / name
+            detector.write_text('#!/bin/sh\necho generic-auto-host\n')
+            detector.chmod(0o755)
+        test_home = self.work / home_name
+        env = dict(os.environ, PATH=str(codex.parent) + os.pathsep + os.environ["PATH"], HOME=str(test_home),
+                   CODEX_CONFIG_SOURCE=str(ROOT / "system-configs/.codex"))
+        for key in ("CODEX_HOME", "CODEX_SKILLS_HOME", "CODEX_CONFIG_SKILLS_SOURCE", "CODEX_CONFIG_STATION"):
+            env.pop(key, None)
+        if station is not None:
+            env["CODEX_CONFIG_STATION"] = station
+        return test_home, env
+
+    def assert_full_configuration(self, test_home):
+        actual = tomllib.loads((test_home / ".codex/config.toml").read_text())
+        expected = tomllib.loads((ROOT / "system-configs/.codex/config.toml").read_text())
+        self.assertEqual(actual, expected)
+        self.assertEqual((test_home / ".codex/AGENTS.md").read_bytes(),
+                         (ROOT / "system-configs/.codex/AGENTS.md").read_bytes())
+        self.assertEqual({path.parent.name for path in (test_home / ".agents/skills").glob("*/SKILL.md")},
+                         {path.parent.name for path in SKILLS.glob("*/SKILL.md")})
+        self.assertEqual({path.name: path.read_bytes() for path in (test_home / ".codex/agents").glob("*.toml")},
+                         {path.name: path.read_bytes() for path in AGENTS.glob("*.toml")})
+        self.assertTrue((test_home / ".agents/skills/office-common/package-check.py").exists())
+        self.assertEqual((test_home / ".agents/skills/colorwheel/SKILL.md").read_bytes(),
+                         (SKILLS / "colorwheel/SKILL.md").read_bytes())
+
+    def test_unknown_host_full_sync_dry_run_and_install(self):
+        test_home, env = self.sync_environment()
         command = [str(ROOT / "scripts/sync.sh"), "--force", "--no-backup"]
         result = subprocess.run(command + ["--dry-run"], env=env, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertFalse((self.live / ".codex").exists())
+        self.assertFalse((test_home / ".codex").exists())
+        self.assertFalse((test_home / ".agents").exists())
         result = subprocess.run(command, env=env, capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertEqual(len(list((self.live / "skills").glob("*/SKILL.md"))), 38)
-        self.assertEqual(len(list((self.live / ".codex/agents").glob("*.toml"))), 8)
-        self.assertTrue((self.live / "skills/office-common/package-check.py").exists())
+        self.assert_full_configuration(test_home)
+
+    def test_empty_station_full_sync(self):
+        test_home, env = self.sync_environment(station="")
+        result = subprocess.run([str(ROOT / "scripts/sync.sh"), "--force", "--no-backup"],
+                                env=env, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assert_full_configuration(test_home)
+
+    def test_manifest_overrides_are_independent_and_preserve_installed_files(self):
+        repo = self.work / "repo"
+        shutil.copytree(ROOT / "scripts", repo / "scripts")
+        (repo / "sync-manifests").mkdir()
+        source_codex = ROOT / "system-configs/.codex"
+        source_config = tomllib.loads((source_codex / "config.toml").read_text())
+        surfaces = {
+            "agents_md": (".codex/AGENTS.md", source_codex / "AGENTS.md", None),
+            "profiles": (".codex/code.config.toml", source_codex / "code.config.toml", ".codex/think.config.toml"),
+            "skills": (".agents/skills/colorwheel/SKILL.md", SKILLS / "colorwheel/SKILL.md", ".agents/skills/ask/SKILL.md"),
+            "agents": (".codex/agents/architect.toml", AGENTS / "architect.toml", ".codex/agents/debugger.toml"),
+        }
+        for key in ("config_owned_keys", *surfaces):
+            with self.subTest(override=key):
+                # Exercise detected manifests and explicitly selected ones.
+                station = None if key in ("config_owned_keys", "skills") else "generic-auto-host"
+                test_home, env = self.sync_environment(station=station, home_name=key)
+                config = test_home / ".codex/config.toml"
+                config.parent.mkdir(parents=True)
+                config.write_text('model = "old"\napproval_policy = "on-request"\n')
+                preserved = 'model = "local-profile"\n' if key == "profiles" else "keep local content\n"
+                if key in surfaces:
+                    target = test_home / surfaces[key][0]
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    target.write_text(preserved)
+                overrides = {key: ["model"] if key == "config_owned_keys" else False}
+                (repo / "sync-manifests/generic-auto-host.json").write_text(json.dumps({"sync": overrides}))
+                result = subprocess.run([str(repo / "scripts/sync.sh"), "--force", "--no-backup"],
+                                        env=env, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                actual_config = tomllib.loads(config.read_text())
+                expected_config = ({"model": source_config["model"], "approval_policy": "on-request"}
+                                   if key == "config_owned_keys" else source_config)
+                self.assertEqual(actual_config, expected_config)
+                for surface, (relative, source, omitted) in surfaces.items():
+                    expected = preserved.encode() if surface == key else source.read_bytes()
+                    self.assertEqual((test_home / relative).read_bytes(), expected, surface)
+                    if omitted and surface == key:
+                        self.assertFalse((test_home / omitted).exists(), omitted)
 
 
 if __name__ == "__main__":
