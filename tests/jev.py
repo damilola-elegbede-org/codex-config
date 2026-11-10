@@ -85,6 +85,32 @@ class JevTests(unittest.TestCase):
         for filename in (config, self.base / "missing.json"):
             self.assertEqual(self.ask(JEV_CONFIG=str(filename)).returncode, 3)
 
+    def test_request_uses_one_validated_exclusion_snapshot(self):
+        config = self.base / "changing-config.json"
+        config.write_text((CLIENT.parent / "jev-config.json").read_text())
+        excluded = self.home / "work/project"
+        excluded.mkdir(parents=True)
+        self.request["cwd"] = str(excluded)
+        counter = self.base / "config-reads.txt"
+        preload = self.base / "changing-config.cjs"
+        # Emulate a config becoming unreadable exactly when the old third read
+        # built the prefix list. No scheduling, network, or wall-clock race.
+        preload.write_text('''const fs = require("node:fs");
+const original = fs.readFileSync;
+let reads = 0;
+fs.readFileSync = function(file, ...args) {
+  if (String(file) === process.env.JEV_CONFIG) {
+    fs.writeFileSync(process.env.JEV_CONFIG_READ_COUNT, String(++reads));
+    if (reads >= 3) return "{";
+  }
+  return original.call(this, file, ...args);
+};
+''')
+        p = subprocess.run(["node", "--require", str(preload), str(CLIENT.parent / "client.mjs")], input=json.dumps(self.request), text=True, capture_output=True, env=self.env | {"JEV_CONFIG": str(config), "JEV_CONFIG_READ_COUNT": str(counter)}, cwd=self.project, timeout=5)
+        self.assertEqual(p.returncode, 3, p.stdout + p.stderr)
+        self.assertIn("egress_excluded_path", p.stderr)
+        self.assertEqual(counter.read_text(), "1")
+
     def test_unknown_and_off_rules_are_unavailable(self):
         self.request["rule"] = "unknown"
         self.assertEqual(self.ask().returncode, 3)

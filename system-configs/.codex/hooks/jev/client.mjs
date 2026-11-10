@@ -264,7 +264,7 @@ function truncateToBudget(obj, budgetChars) {
 // anchored at "/" or at $HOME ("~/work"; a bare "work" means "~/work"), matched case-insensitively on a
 // path-segment boundary against the raw and the realpath form of the cwd. A trailing "/", "/*" or "/**" is
 // ignored. A substring such as "/work/" no longer matches an unrelated checkout like /home/runner/work/x.
-function excludedPrefixes() {
+function excludedPrefixes(cfg) {
   const out = new Set();
   const homes = new Set([home()]);
   try {
@@ -272,7 +272,7 @@ function excludedPrefixes() {
   } catch {
     /* home not on disk */
   }
-  for (const raw of (config().exclude_paths || []).filter((p) => typeof p === "string" && p.trim())) {
+  for (const raw of cfg.exclude_paths.filter((p) => p.trim())) {
     const e = raw.trim().replace(/(?:\/\*{0,2})+$/, "");
     if (!e) continue;
     const rel = e.startsWith("~") ? e.replace(/^~\/?/, "") : e.startsWith("/") ? null : e;
@@ -290,7 +290,7 @@ function excludedPrefixes() {
 }
 
 // External message text is not authorized for Jev by this integration.
-export function egressReason(input) {
+export function egressReason(input, cfg = config()) {
   // The caller may flag the source at top level or inside state; honor both.
   const srcs = [input.untrusted_source, input.state?.untrusted_source].flatMap((v) =>
     Array.isArray(v) ? v : typeof v === "string" ? [v] : [],
@@ -298,7 +298,7 @@ export function egressReason(input) {
   // Normalize to individual tags ("gmail,slack" -> gmail + slack) so each one needs its own authorization.
   const blocked = [...new Set(srcs.flatMap((s) => String(s).toLowerCase().match(/gmail|slack/g) || []))];
   if (blocked.length) return "egress_untrusted_source";
-  if (configInvalid()) return "egress_config_unreadable"; // fail closed: the exclusion list is unknown
+  if (cfg[CONFIG_INVALID]) return "egress_config_unreadable"; // fail closed: the exclusion list is unknown
   const cwds = new Set();
   for (const c of [input.cwd, process.cwd()]) {
     if (typeof c !== "string" || !c) continue;
@@ -323,7 +323,7 @@ export function egressReason(input) {
       /* parent not on disk: raw only */
     }
   }
-  for (const q of excludedPrefixes()) {
+  for (const q of excludedPrefixes(cfg)) {
     for (const c of cwds) {
       const lc = c.toLowerCase();
       if (lc === q || lc.startsWith(q + "/")) return "egress_excluded_path";
@@ -538,7 +538,9 @@ async function ask() {
   if (mock === "unavailable") return fail("mock_unavailable");
   if (killSwitchOn()) return fail("kill_switch");
   if (!thisRule || !["shadow", "enforce"].includes(thisRule.mode)) return fail("rule_off_or_unknown");
-  const why = egressReason(input);
+  // Use the same validated snapshot for policy, model, and budget. A concurrent
+  // config replacement must not remove exclusions between validation and use.
+  const why = egressReason(input, cfg);
   if (why) return fail(why);
 
   // Redact, then truncate. Untrusted text stays under its own key.

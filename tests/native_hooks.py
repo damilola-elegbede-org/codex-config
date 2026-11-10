@@ -59,6 +59,17 @@ class HookTests(unittest.TestCase):
             self.assertNotIn("permissionDecision", output.get("hookSpecificOutput", {}))
         self.assertEqual(self.bash('git push --force-with-lease origin feature'), {})
 
+    def test_git_hook_bypass_long_option_abbreviations(self):
+        for command in ['git commit --no-veri -m change', 'git push --no-veri origin feature',
+                        'git am --no-v patch.mbox', 'git commit --no-verif -m change']:
+            output = self.bash(command)
+            self.assertEqual(output.get('hookSpecificOutput', {}).get('permissionDecision'), 'deny', command)
+        for command in ['git commit --no-verbose -m change', 'git push --no-verbose origin feature',
+                        'echo "git commit --no-veri"', "printf '%s' 'git am --no-v'",
+                        'git commit -m "--no-veri"', 'git commit --message=--no-veri',
+                        'git commit -m--no-veri']:
+            self.assertNotIn('permissionDecision', self.bash(command).get('hookSpecificOutput', {}), command)
+
     def test_apply_patch_secret_guard_only_added_production_content(self):
         token = 'ghp_' + 'A' * 36
         patch = '*** Begin Patch\n*** Add File: app.py\n+TOKEN = "' + token + '"\n*** End Patch'

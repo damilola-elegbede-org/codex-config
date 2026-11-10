@@ -334,7 +334,10 @@ def git_guard(command):
                         break  # The rest is a message/file/commit argument.
                     if character == "n":
                         short_bypass = True
-        if op == "__hooks_disabled__" or (op in {"commit", "push", "merge", "rebase", "cherry-pick", "revert", "am"} and "--no-verify" in flags) or short_bypass:
+        # Git accepts unambiguous long-option prefixes. Conservatively recognize
+        # --no-v through --no-verify while preserving distinct --no-verbose.
+        long_bypass = any(len(flag) >= len("--no-v") and "--no-verify".startswith(flag) for flag in flags)
+        if op == "__hooks_disabled__" or (op in {"commit", "push", "merge", "rebase", "cherry-pick", "revert", "am"} and long_bypass) or short_bypass:
             return deny("Preserve Git hooks. Remove the hook-bypass option and resolve the failing hook before retrying.")
         destructive = (op == "reset" and "--hard" in flags or
                        op == "clean" and any(x.startswith("-") and not x.startswith("--") and "f" in x and "n" not in x for x in flags) or
