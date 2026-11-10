@@ -48,6 +48,10 @@ PAINT_ATTRIBUTE_RE = re.compile(
 )
 RECT_RE = re.compile(r"<rect\b[^>]*?/?>", re.IGNORECASE)
 PATH_RE = re.compile(r"<path\b[^>]*?/?>", re.IGNORECASE)
+DEFINITION_CONTAINER_RE = re.compile(
+    r"<(?:[\w.-]+:)?(?:defs|mask|clipPath|pattern|symbol|marker|filter)\b",
+    re.IGNORECASE,
+)
 STYLE_PAINT_RE = re.compile(
     rf"""((?:^|[;{{"']\s*)(?:fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*)({COLOR_TOKEN})""",
     re.IGNORECASE,
@@ -806,6 +810,11 @@ def require_inline_paints(svg: str) -> None:
             "SVG stylesheets are unsupported for recoloring; provide an SVG "
             "with explicit paint attributes or inline style declarations"
         )
+    if DEFINITION_CONTAINER_RE.search(svg):
+        raise RuntimeError(
+            "SVG definition containers are unsupported for recoloring; "
+            "changing their paints can alter masks, clipping, or reusable artwork"
+        )
 
 
 def geometry_fingerprint(svg: str) -> str:
@@ -1018,16 +1027,24 @@ def full_canvas_path(
 
 
 def strip_full_canvas_background(svg: str) -> tuple[str, bool]:
-    _, _, viewbox = validate_svg(svg)
+    _, body, viewbox = validate_svg(svg)
+    # Geometry inside definition containers may control masks, clipping, or
+    # reusable artwork. Preserve it rather than guessing its rendering role.
+    if DEFINITION_CONTAINER_RE.search(svg):
+        return svg, False
     # Transformed geometry cannot be identified as a canvas background from
     # its untransformed dimensions alone. Preserve ambiguous sources.
     if re.search(r"\btransform\s*=|\btransform\s*:", svg, re.IGNORECASE):
         return svg, False
     x, y, width, height = viewbox
+    # Only a first direct child can be an unambiguous background here. Do not
+    # descend into groups or skip earlier paint to erase a foreground shape.
+    first_child = body.lstrip()
     for match in RECT_RE.finditer(svg):
         rect = match.group(0)
         if (
-            attribute_value(rect, "rx") in {None, "0", "0.0"}
+            first_child.startswith(rect)
+            and attribute_value(rect, "rx") in {None, "0", "0.0"}
             and attribute_value(rect, "ry") in {None, "0", "0.0"}
             and matches_dimension(attribute_value(rect, "x"), x, 0)
             and matches_dimension(attribute_value(rect, "y"), y, 0)
@@ -1037,7 +1054,7 @@ def strip_full_canvas_background(svg: str) -> tuple[str, bool]:
             return svg.replace(rect, make_element_transparent(rect), 1), True
     for match in PATH_RE.finditer(svg):
         background = match.group(0)
-        if full_canvas_path(background, viewbox):
+        if first_child.startswith(background) and full_canvas_path(background, viewbox):
             return svg.replace(
                 background, make_element_transparent(background), 1
             ), True
@@ -1333,6 +1350,11 @@ def build_review_html(review: dict[str, Any]) -> str:
         review.get("display_font", {}), "Arial"
     )
     body_css, body_family = font_css(review.get("body_font", {}), "Arial")
+    # CSS imports after @font-face (or other rules) are ignored by browsers.
+    # font_css emits one generated rule, so order imports before font faces.
+    font_styles = "\n".join(
+        sorted((display_css, body_css), key=lambda rule: not rule.startswith("@import "))
+    )
     display_style, display_weight = font_traits(review.get("display_font", {}))
     body_style, body_weight = font_traits(review.get("body_font", {}))
     display_stack = json.dumps(display_family) + ",sans-serif"
@@ -1371,8 +1393,7 @@ def build_review_html(review: dict[str, Any]) -> str:
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{html.escape(name)} — Brandkit draft</title>
-<style>{display_css}
-{body_css}
+<style>{font_styles}
 :root{{--bg:{background};--text:{text}}}
 *{{box-sizing:border-box}}body{{margin:0;background:var(--bg);color:var(--text);font-family:{body_stack};font-style:{body_style};font-weight:{body_weight}}}
 main{{max-width:1000px;margin:auto;padding:36px}}.eyebrow{{font:600 11px/1 sans-serif;letter-spacing:.13em;text-transform:uppercase}}
