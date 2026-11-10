@@ -51,9 +51,10 @@ already a Codex skill and is separate from this system configuration inventory.
   resources. Generic image and website requests follow the host's native tools.
   CLI/account setup, generation, uploads, and publication remain within the
   user's actual task authorization. Sync never installs or authenticates the CLI.
-- Jev hooks are optional external Claude infrastructure, not bundled dependencies.
-  ask-jev now uses a local filtered relevance ranker. Commit classification, review
-  depth, Linear grouping, and DOM selection use direct evidence and agent judgment.
+- Native hooks and the portable Jev client are included from the later hook snapshot
+  `e1c3210b3938d4ac0a6452baf85b9089e9267371`. `ask-jev` uses model relevance
+  with an explicit local fallback. Commit classification, review depth, Linear
+  grouping, and DOM selection continue to use direct evidence and agent judgment.
 - MCP evaluations now use configured Codex CLI sessions, inherited model settings,
   exact XML answers, and observed successful target MCP calls. This uses model
   quota only when run explicitly. It does not require Anthropic authentication.
@@ -72,12 +73,53 @@ already a Codex skill and is separate from this system configuration inventory.
   PDF libraries, Playwright, yt-dlp, ffmpeg, renderer, MCP SDK) are not installed by
   sync. Skill discovery is verified; every external service workflow is not run.
 
+## Hook mapping and limits
+
+Hook source: [claude-config at e1c3210](https://github.com/damilola-elegbede-org/claude-config/tree/e1c3210b3938d4ac0a6452baf85b9089e9267371/system-configs/.claude/hooks).
+The base skill and agent inventory remains pinned above; the hook inventory and
+updated ask-jev provenance identify their own snapshot in the JSON manifest.
+
+| Source behavior | Codex adaptation |
+| --- | --- |
+| Git safeguards and file guards | Deterministic native Bash/apply_patch checks; model classifications cannot grant permission. |
+| Session/project context and compact reinjection | Native SessionStart context from the current worktree; no Claude memory import. |
+| Prompt skill selection | Bounded Jev suggestion from available Codex skills, with no fabricated invocation. |
+| ask-jev file relevance | Filtered real Jev scoring; unavailable results retain an explicitly local shortlist. |
+| Failure classification and retry counters | Structured completion status updates counters when available; native raw stdout has unknown status. Fixed error labels can supply advice without exporting command/output text. |
+| Executive and PR completion reminders | Bounded advisory output; no automatic merge or unbounded continuation. |
+| Compaction logging | Metadata only through PostCompact; context reinjection uses SessionStart because plain compaction-hook stdout is ignored. |
+
+The following are excluded individually, rather than treating all hooks as
+unsupported:
+
+- Automatic Read/Grep/Glob/Bash output trimming: Claude's `updatedToolOutput`
+  contract does not provide a compatible native replacement. Explicit ranking
+  remains available through ask-jev.
+- Transcript-based approval leases, question-channel routing and interview Stop
+  enforcement: these assume Claude transcript/tool schemas. Native session
+  authorization and the corresponding Codex skills remain authoritative.
+- Claude memory retrieval, deduplication and harvesting: the storage and lifecycle
+  contracts differ; no cross-provider memory import is performed.
+- Notification and StopFailure hooks: no matching event is registered. Known
+  command failures use PostToolUse diagnostics.
+- Speech, audio alerts, private session registry, nightly reports and daemon
+  lifecycle: operational accessories are not installed by this configuration.
+- Automatic formatter/test runners: existing test/verify skills use the actual
+  repository's gates without launching arbitrary tools after every patch.
+- Automatic link fetching and experiment execution: no unrelated network requests
+  or experiments are started. Completion advice does not expand task scope.
+
+Native hooks need trust review through `/hooks`. Sync preserves trust state and
+never marks definitions trusted itself. Dependency setup is separate from model
+calls; missing credentials or service failures produce bounded unavailable/fallback
+results. Tests use fixtures, not private source or paid generation.
+
 ## Sync and verification
 
 Every machine receives the complete owned configuration, global instructions,
-skills, and agents by default, including unknown automatically detected hosts.
+skills, agents, and native hooks by default, including unknown automatically detected hosts.
 Station manifests retain explicit overrides: `skills: false`, `agents: false`,
-and `agents_md: false` skip future updates without deleting installed files.
+`agents_md: false`, and `hooks: false` skip future updates without deleting installed files.
 The Mini’s empty exceptions file inherits the full defaults. Station selection
 does not restrict a rollout when no overrides exist. Shipped model, TUI, and
 tmux policy are preserved; the response-style change is described above.
@@ -102,7 +144,7 @@ Canonical: `docs/claude-migration.json` (reviewed 2026-11-09).
 | Skill | Purpose |
 | --- | --- |
 | `ask` | Present a focused decision or request for missing information with a recommendation. Use when D asks to be consulted or a material decision remains unresolved. |
-| `ask-jev` | Rank candidate source files locally before reading a large candidate set. Use for broad where-is-this-implemented questions; skips exact-symbol lookups. |
+| `ask-jev` | Use Jev to rank candidate source files, with an explicit local keyword fallback. |
 | `audit` | Audit Codex skill and agent definitions for schema, resource, and configuration integrity. Use for configuration ecosystem checks, with optional scoped repairs. |
 | `branch` | Create a clearly named feature or fix branch from the verified upstream base. Use when branch creation is requested. |
 | `bro` | Re-explain the previous assistant message in plain language. Use when D says bro, asks for a simpler explanation, or did not follow the response. |

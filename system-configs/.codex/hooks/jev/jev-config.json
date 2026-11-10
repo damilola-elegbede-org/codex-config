@@ -1,0 +1,10 @@
+{
+  "model": "typesafe-ai/jev",
+  "default_timeout_ms": 1500,
+  "max_state_tokens": 28000,
+  "exclude_paths": [
+    "~/work",
+    "~/Visa",
+    "~/visa"
+  ]
+}

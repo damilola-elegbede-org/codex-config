@@ -51,7 +51,7 @@ fleet model policy and are checked by `tests/test-policy-agreement.sh` whenever
 that policy checkout is available.
 
 Every machine inherits all repository-owned settings, profiles, global instructions,
-skills, and agents unless its station manifest overrides those defaults.
+skills, agents, and native hooks unless its station manifest overrides those defaults.
 The checked-in Mac Mini manifest has an empty override set (`"sync": {}`),
 so it also receives the native status line and full-access defaults (`approval_policy =
 "never"`, `sandbox_mode = "danger-full-access"`). These permission defaults
@@ -102,6 +102,43 @@ are deliberately not deleted automatically.
 `.agents/skills` sibling of `CODEX_CONFIG_SOURCE`. `CODEX_SKILLS_HOME` overrides
 the skill destination for isolated tests; Codex still needs to discover that
 location, so normal installs should use `~/.agents/skills`.
+
+## Native hooks and Jev
+
+The configuration includes native `SessionStart`, `UserPromptSubmit`,
+`PreToolUse`, `PostToolUse`, `Stop`, and `PostCompact` hooks, adapted from
+`claude-config` at `e1c3210b3938d4ac0a6452baf85b9089e9267371`.
+One dispatcher handles Git safeguards, session/worktree context, skill
+suggestions, failure/retry advice, and bounded completion reminders. Codex
+0.166.0 can deliver raw shell output without an exit code; those events remain
+unknown and do not reset or increment failure counters. It uses
+Codex event payloads; Claude transcript, approval-lease and memory formats are
+not loaded. Style and completion reminders are advisory. Jev suggestions do
+not authorize actions or claim that a skill has been invoked.
+
+`ask-jev` uses the real Jev model after local file filtering, with a clearly
+identified keyword fallback when the service is unavailable. The portable
+client also supports bounded skill suggestions and failure classification.
+It retains secret redaction, excluded checkout paths, content-free decision
+logs and a kill switch. Authentication uses the existing AI Gateway credential
+lookup; sync never copies credentials or makes a model request.
+
+Hooks install by default. A station manifest's `hooks: false` skips future hook
+updates without deleting installed hooks. Sync stops on customized or unmanaged
+conflicts, backs up changed owned files, and records hashes separately from
+skills and agents. Hook support files precede `hooks.json` during installation.
+Jev requires Node.js 22 or newer and npm. A real sync installs pinned SDK
+dependencies with lifecycle scripts disabled into a lock-addressed private cache
+under `$CODEX_HOME/.codex-config-deps/jev/`; a dry run never downloads or installs
+dependencies. Existing unrelated hook resources and inline configuration remain
+untouched.
+
+Codex must trust each hook definition before executing it. Inspect and review
+new or changed definitions through `/hooks`; sync does not manufacture trust
+or use a trust bypass. Installed and active are distinct states. Hook JSON and
+behavior tests are supplemented by native CLI discovery and trust verification.
+See [the native hook contract](https://learn.chatgpt.com/docs/hooks) and
+[the migration mapping](docs/CLAUDE-MIGRATION.md#hook-mapping-and-limits).
 
 ## Never touched
 
@@ -173,7 +210,7 @@ scripts/sync.sh
 
 The Mini Codex home is a fleet surface. Executive formatting applies to
 human-facing prose, including other processes using this home; it explicitly
-defers to machine-readable and review output contracts. Hooks and rules remain outside this rollout. User extensions outside shipped
+defers to machine-readable and review output contracts. Native lifecycle hooks are included; executable permission rules remain outside this rollout. User extensions outside shipped
 paths remain untouched. Skill and agent changes require a fresh session;
 independent agent work still follows the session’s delegation policy. Global instructions load at session startup;
 restart/resume existing sessions after sync to load them and the status-line order.

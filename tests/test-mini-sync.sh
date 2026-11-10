@@ -8,6 +8,17 @@ mkdir -p "$WORK/bin" "$WORK/live" "$WORK/home"
 printf '%s\n' '#!/bin/sh' 'echo damilola-mbm' > "$WORK/bin/scutil"
 printf '%s\n' '#!/bin/sh' 'echo "Model provider __nonexistent__ not found" >&2' 'exit 1' > "$WORK/bin/codex"
 chmod +x "$WORK/bin/scutil" "$WORK/bin/codex"
+printf '%s\n' '#!/bin/sh' 'if [ "$1" = --version ]; then echo v22.0.0; fi' > "$WORK/bin/node"
+cat > "$WORK/bin/npm" <<'PY'
+#!/usr/bin/env python3
+import json
+from pathlib import Path
+root = Path.cwd()
+version = json.loads((root / 'package.json').read_text())['dependencies']['ai']
+(root / 'node_modules/ai').mkdir(parents=True)
+(root / 'node_modules/ai/package.json').write_text(json.dumps({'version': version}))
+PY
+chmod +x "$WORK/bin/node" "$WORK/bin/npm"
 cat > "$WORK/live/config.toml" <<'TOML'
 model = "old"
 approval_policy = "on-request"
@@ -50,5 +61,7 @@ for theme in (source / "themes").glob("*.tmTheme"):
 assert (target / "AGENTS.md").read_bytes() == (source / "AGENTS.md").read_bytes()
 assert (target / "custom.config.toml").read_text() == 'model = "custom"\n'
 assert (target / "auth.json").read_text() == 'test-auth-state\n'
+assert (target / "hooks.json").read_bytes() == (source / "hooks.json").read_bytes()
+assert (target / ".codex-config-managed-hooks.json").is_file()
 print("PASS: detected Mini syncs all shipped settings and profiles, preserving local state")
 PY
