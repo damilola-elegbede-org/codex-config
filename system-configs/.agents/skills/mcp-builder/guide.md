@@ -30,9 +30,9 @@ Clear, descriptive tool names help agents find the right tools quickly. Use cons
 (e.g., `github_create_issue`, `github_list_repos`) and action-oriented naming.
 
 **Context Management:**
-Agents benefit from concise tool descriptions and the ability to filter/paginate results. Design
-tools that return focused, relevant data. Some clients support code execution which can help agents
-filter and process data efficiently.
+Give tools detailed operational descriptions and let agents filter and paginate so responses
+return focused, relevant data. Some clients support code execution, which helps agents filter
+and process data efficiently.
 
 **Actionable Error Messages:**
 Error messages should guide agents toward solutions with specific suggestions and next steps.
@@ -124,11 +124,13 @@ For each tool:
 - Use `structuredContent` in tool responses (TypeScript SDK feature)
 - Helps clients understand and process tool outputs
 
-**Tool Description:**
+**Tool Description** (usually several sentences, like a short manual entry):
 
-- Concise summary of functionality
-- Parameter descriptions
-- Return type schema
+- What the tool does, matching its actual behavior
+- When to use it and when a named sibling tool fits instead
+- Accepted parameter formats, limits, and meanings
+- Caveats, failure modes, and information it does not return
+- The complete return shape
 
 **Implementation:**
 

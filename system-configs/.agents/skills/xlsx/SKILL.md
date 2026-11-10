@@ -1,7 +1,7 @@
 ---
 name: "xlsx"
 description: "Create, read, clean, or edit spreadsheet files with formulas and formatting. Use when the primary deliverable is XLSX, XLSM, CSV, or TSV."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/xlsx/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/xlsx/SKILL.md"}
 ---
 
 # xlsx

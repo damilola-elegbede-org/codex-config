@@ -1,14 +1,19 @@
 {
   "source_repository": "https://github.com/damilola-elegbede-org/claude-config",
-  "source_commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0",
-  "skills": 38,
-  "agents": 8,
+  "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+  "previous_source_commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0",
+  "reviewed_at": "2026-11-09",
+  "source_skills": 51,
+  "source_agents": 8,
+  "skills": 50,
+  "agents": 9,
   "entries": [
     {
       "kind": "agent",
       "name": "architect",
       "source": "system-configs/.claude/agents/architect.md",
-      "source_sha256": "e893371ba8fcda5ddd10ba284c98ecf61c9eb77f49c5c0c92d33be246f7a3e0a",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "824f12754700ae7cdb959c51cd77140bc6e4b5751a435d3e532c6e891d68b17a",
       "target": "system-configs/.codex/agents/architect.toml",
       "strategy": "adapted"
     },
@@ -16,7 +21,8 @@
       "kind": "agent",
       "name": "code-reviewer",
       "source": "system-configs/.claude/agents/code-reviewer.md",
-      "source_sha256": "fbb4c9642e1df7e7909c7321d939cf9cfa4270022deafd76928ba757d8dfb84a",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "6c51201ea2108cbfd96d6cf00a0b48c15172168737e1a6221f2d9909293c645b",
       "target": "system-configs/.codex/agents/code-reviewer.toml",
       "strategy": "adapted"
     },
@@ -24,7 +30,8 @@
       "kind": "agent",
       "name": "debugger",
       "source": "system-configs/.claude/agents/debugger.md",
-      "source_sha256": "a03e02165d96b2053ddba2ffa0745c8067745404e4b184e5396cd706a7d06ac7",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "5edef3ee4d523915daf14f22608d8aa3a9408d666591d32cca23902791a55f3e",
       "target": "system-configs/.codex/agents/debugger.toml",
       "strategy": "adapted"
     },
@@ -32,23 +39,35 @@
       "kind": "agent",
       "name": "devops",
       "source": "system-configs/.claude/agents/devops.md",
-      "source_sha256": "0ece2c9f9684df12f3ef53349ee16f8edc13d61089f7ad7a541bcaab38d22796",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "4b1c5109c94a049fa90a4a028b84c4b0b343d3a8c567d895c24879f574430a69",
       "target": "system-configs/.codex/agents/devops.toml",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "agent",
+      "name": "experiment-runner",
+      "source": "system-configs/.claude/agents/experiment-runner.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "e5f878b4f6084e5d70f85d072e42728c18a2c3cce9423083a6de90c39df267c3",
+      "target": "system-configs/.codex/agents/experiment-runner.toml",
       "strategy": "adapted"
     },
     {
       "kind": "agent",
       "name": "feature-agent",
       "source": "system-configs/.claude/agents/feature-agent.md",
+      "source_commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0",
       "source_sha256": "5af0ab7d18af286bb98fc42ecdcfd22c544fc059a1608d2b3359b63a64f535fe",
       "target": "system-configs/.codex/agents/feature-agent.toml",
-      "strategy": "adapted"
+      "strategy": "retained-codex-adapter"
     },
     {
       "kind": "agent",
       "name": "frontend-engineer",
       "source": "system-configs/.claude/agents/frontend-engineer.md",
-      "source_sha256": "95529435044f8f42aa866ee358c9e70ecedf261029f44129ec58ca464fa86ee5",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "d5816b6887221a4d88b754ae45320fa299ee57760c0264b106aff239b4904def",
       "target": "system-configs/.codex/agents/frontend-engineer.toml",
       "strategy": "adapted"
     },
@@ -56,7 +75,8 @@
       "kind": "agent",
       "name": "security-auditor",
       "source": "system-configs/.claude/agents/security-auditor.md",
-      "source_sha256": "a685834089d64a8776f224a8bf23c940fbc3721a7fe4373e768862197ba15392",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "6aa6f499f54f68e222518013f56d19f12ac9bdfdccdbfb88bf5b36bfc52e8f51",
       "target": "system-configs/.codex/agents/security-auditor.toml",
       "strategy": "adapted"
     },
@@ -64,7 +84,8 @@
       "kind": "agent",
       "name": "test-engineer",
       "source": "system-configs/.claude/agents/test-engineer.md",
-      "source_sha256": "efacfbfc2ec4906ea15244079d97e99226943817c97bbdc90863ba1c5cf1c8ea",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "1893b1ec3a2b768cc910666cb91c7d63d758bb9fee7f53d315341e802079c76a",
       "target": "system-configs/.codex/agents/test-engineer.toml",
       "strategy": "adapted"
     },
@@ -72,6 +93,7 @@
       "kind": "skill",
       "name": "ask",
       "source": "system-configs/.claude/skills/ask/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "e0a2acd5130effa41c95a460d0a6faa8d0834fb83cbdb9ec82eccebe7581d1d0",
       "target": "system-configs/.agents/skills/ask/SKILL.md",
       "strategy": "adapted"
@@ -80,6 +102,7 @@
       "kind": "skill",
       "name": "ask-jev",
       "source": "system-configs/.claude/skills/ask-jev/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "b70b103e022a3f3dbf426d2f968aea9458e4162bc6b9253b2ca873f66a77de04",
       "target": "system-configs/.agents/skills/ask-jev/SKILL.md",
       "strategy": "adapted"
@@ -88,7 +111,8 @@
       "kind": "skill",
       "name": "audit",
       "source": "system-configs/.claude/skills/audit/SKILL.md",
-      "source_sha256": "95297820062bf68d463b3ad4722687e3fe75c2b9a1457b80d8404e99437c0f7a",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "05b68671efff1857b94b9e1491d57e8050de67cedb1ad941f4b6e9d6c135b30b",
       "target": "system-configs/.agents/skills/audit/SKILL.md",
       "strategy": "adapted"
     },
@@ -96,7 +120,8 @@
       "kind": "skill",
       "name": "branch",
       "source": "system-configs/.claude/skills/branch/SKILL.md",
-      "source_sha256": "0931d24bfbf8b4a1541ca81d1b48e289abf9900f7a7dbf3d1a48c8c88e22da32",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "3e967320d50bb63a35727813a7002bcf5cbe3b910de1a5cc20b02d23275653e4",
       "target": "system-configs/.agents/skills/branch/SKILL.md",
       "strategy": "adapted"
     },
@@ -104,6 +129,7 @@
       "kind": "skill",
       "name": "bro",
       "source": "system-configs/.claude/skills/bro/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "d390ef178422532d8bb49f7a29848fc76b54f9a96d411d82e2a89dc28bbffd70",
       "target": "system-configs/.agents/skills/bro/SKILL.md",
       "strategy": "adapted"
@@ -112,7 +138,8 @@
       "kind": "skill",
       "name": "changelog",
       "source": "system-configs/.claude/skills/changelog/SKILL.md",
-      "source_sha256": "64b1fd4e8ef64eb926f5c6abc7f3d5db6b863640ff3acb3bdbb66eb6018117fa",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "d73be1edb33d1cf9d8f2f55ffdb373d3ad570830a3fc537b6333f05fcc357fba",
       "target": "system-configs/.agents/skills/changelog/SKILL.md",
       "strategy": "adapted"
     },
@@ -120,7 +147,8 @@
       "kind": "skill",
       "name": "colorwheel",
       "source": "system-configs/.claude/skills/colorwheel/SKILL.md",
-      "source_sha256": "7297afd4822aaeca7222c6a36757d2cdf4ebdeb7cfb2d4389b6936faad00dc36",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "7a0ffa84a0a098df7279807c5e5dbd09f770b6beac8e12a6adabf0b4acbe5c18",
       "target": "system-configs/.agents/skills/colorwheel/SKILL.md",
       "strategy": "adapted"
     },
@@ -128,7 +156,8 @@
       "kind": "skill",
       "name": "commit",
       "source": "system-configs/.claude/skills/commit/SKILL.md",
-      "source_sha256": "d113f774d0631d894d5a5467f45c8b10d846905a1bc1552e1fe5ea5594b1d557",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "53ddbb7046f7e18ecafcd33cffd854b852d815834233790f5577849e90eea26a",
       "target": "system-configs/.agents/skills/commit/SKILL.md",
       "strategy": "adapted"
     },
@@ -136,6 +165,7 @@
       "kind": "skill",
       "name": "debug",
       "source": "system-configs/.claude/skills/debug/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "fd78a00f61b17787f2ae95cbc79b606178a6d4cb0f8f90803f179369d839a690",
       "target": "system-configs/.agents/skills/debug/SKILL.md",
       "strategy": "adapted"
@@ -144,6 +174,7 @@
       "kind": "skill",
       "name": "deps",
       "source": "system-configs/.claude/skills/deps/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "9e2a4cd906b50d683604c43e4361ac626a56db8d31c9918b6d839058ec137289",
       "target": "system-configs/.agents/skills/deps/SKILL.md",
       "strategy": "adapted"
@@ -152,7 +183,8 @@
       "kind": "skill",
       "name": "docs",
       "source": "system-configs/.claude/skills/docs/SKILL.md",
-      "source_sha256": "fcf970edc242ac6c10a13f6fba61d637743371a5fc3950f21650d84d46c8a7e1",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "23469d78d3142b5abcc4d08c74b3f00c27bb0299c6e261001b038f67a56a236b",
       "target": "system-configs/.agents/skills/docs/SKILL.md",
       "strategy": "adapted"
     },
@@ -160,7 +192,8 @@
       "kind": "skill",
       "name": "docx",
       "source": "system-configs/.claude/skills/docx/SKILL.md",
-      "source_sha256": "56c7c6b598eae97b8519088fce93d4388515e6a033a3e054cf0ca18065cca78e",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "bf84c4fc6d4354f3fe4e9ddb8a723812dad7a2e1b74a613d5b08eefcf4a5d8b6",
       "target": "system-configs/.agents/skills/docx/SKILL.md",
       "strategy": "independent-equivalent"
     },
@@ -168,15 +201,26 @@
       "kind": "skill",
       "name": "excalidraw",
       "source": "system-configs/.claude/skills/excalidraw/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "cb596187357c6719798cf1182f36e1b88457f484ff898f6c97d08e707c6f7d2d",
       "target": "system-configs/.agents/skills/excalidraw/SKILL.md",
       "strategy": "adapted"
     },
     {
       "kind": "skill",
+      "name": "experiment",
+      "source": "system-configs/.claude/skills/experiment/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "f844aaa4e2c0913b48467c648501ea3104b8bf7426d9f146f6fd51a140f3a2c8",
+      "target": "system-configs/.agents/skills/experiment/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
       "name": "feature-lifecycle",
       "source": "system-configs/.claude/skills/feature-lifecycle/SKILL.md",
-      "source_sha256": "d8da5350d461bef6bc988b00a746ad8620acd42f16f82e685daceeb4298a1c17",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "face9d73f80214f491a012a70b9791edb8f7d4578553cd11a9ccc871ee705820",
       "target": "system-configs/.agents/skills/feature-lifecycle/SKILL.md",
       "strategy": "adapted"
     },
@@ -184,7 +228,8 @@
       "kind": "skill",
       "name": "fix-ci",
       "source": "system-configs/.claude/skills/fix-ci/SKILL.md",
-      "source_sha256": "3efa7a4b124467d5599c2199b7be12d0bd0c5aff0b1434c214ec2bde79907b99",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "f813f3b922c493663a1c98c15b17030f6fab41960c53f0be4a49a25604f7f0b0",
       "target": "system-configs/.agents/skills/fix-ci/SKILL.md",
       "strategy": "adapted"
     },
@@ -192,7 +237,8 @@
       "kind": "skill",
       "name": "frontend-design",
       "source": "system-configs/.claude/skills/frontend-design/SKILL.md",
-      "source_sha256": "f04c45f1e6b07fd8e8b7b192a3dcd0817630c84fa15ba2dd6e6f8cb0492c7a8c",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "6a9ec1e9181fcb97213f8ef2bba10852dd499e4ceefa38d5abf536cb5950a625",
       "target": "system-configs/.agents/skills/frontend-design/SKILL.md",
       "strategy": "adapted"
     },
@@ -200,15 +246,106 @@
       "kind": "skill",
       "name": "gauntlet-loop",
       "source": "system-configs/.claude/skills/gauntlet-loop/SKILL.md",
-      "source_sha256": "0abbba34600b36668098bea37ed78ca424ad617aedcdfa440569afc33ce5fadd",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "2e26712e3af0ef6ddfa32f440f234e4cce837f6591e7298af8258de147a88b79",
       "target": "system-configs/.agents/skills/gauntlet-loop/SKILL.md",
       "strategy": "adapted"
     },
     {
       "kind": "skill",
+      "name": "goal-status",
+      "source": "system-configs/.claude/skills/goal-status/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "3400b1d25c245a558cd4ccc74e5dffe7311358bc826b3095254a214555a172c8",
+      "target": "system-configs/.agents/skills/goal-status/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-brandkit",
+      "source": "system-configs/.claude/skills/higgsfield-brandkit/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "8e0351e08751b70f1b14928b13977b668c8f802209da2d545f39fc061519b886",
+      "target": "system-configs/.agents/skills/higgsfield-brandkit/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-generate",
+      "source": "system-configs/.claude/skills/higgsfield-generate/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "68eba5fdda50664f3a598997460a3dc5bb1e9a0d4f7618d7d5b0d5516acefbf0",
+      "target": "system-configs/.agents/skills/higgsfield-generate/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-marketplace-cards",
+      "source": "system-configs/.claude/skills/higgsfield-marketplace-cards/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "60f5c2dd07b9b66c2212b3fec8266ffe8d07c69119ad5145c6ee8583b4af5c97",
+      "target": "system-configs/.agents/skills/higgsfield-marketplace-cards/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-product-photoshoot",
+      "source": "system-configs/.claude/skills/higgsfield-product-photoshoot/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "91d621f27ffae1c78585e5f835f5479b9b1b38eceb33c555bb6649b6a6d0638b",
+      "target": "system-configs/.agents/skills/higgsfield-product-photoshoot/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-soul-id",
+      "source": "system-configs/.claude/skills/higgsfield-soul-id/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "e647fbbe5c758cb84a53727fc581bce017fe1fd88c760a781b754339b3e106f4",
+      "target": "system-configs/.agents/skills/higgsfield-soul-id/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-video-explainer",
+      "source": "system-configs/.claude/skills/higgsfield-video-explainer/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "2c4add4cb54cf123a57bdef1596b4f49cbcccf98e7a8a3d88a9a3e0ee086d77c",
+      "target": "system-configs/.agents/skills/higgsfield-video-explainer/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-websites",
+      "source": "system-configs/.claude/skills/higgsfield-websites/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "a5a92a241585cd9c1679ddf60e5b72c1ac591fdc63d2b85fb9ceff49f4bab7a7",
+      "target": "system-configs/.agents/skills/higgsfield-websites/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
+      "name": "higgsfield-youtube-thumbnail",
+      "source": "system-configs/.claude/skills/higgsfield-youtube-thumbnail/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "5c19329285c9ae2e3beaa8bfa282b480f7f571a434e9324907b3fa2984c2d95f",
+      "target": "system-configs/.agents/skills/higgsfield-youtube-thumbnail/SKILL.md",
+      "strategy": "adapted",
+      "vendor_version": "0.13.0"
+    },
+    {
+      "kind": "skill",
       "name": "implement",
       "source": "system-configs/.claude/skills/implement/SKILL.md",
-      "source_sha256": "efa90c8d85196a4a99406fa4b9040ec11a19c1f89538917dffc0b34a2047cd57",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "d6df250d5a9423175d487c0ae6584cae607a59b6a28b030d668bae29a88aac7d",
       "target": "system-configs/.agents/skills/implement/SKILL.md",
       "strategy": "adapted"
     },
@@ -216,15 +353,26 @@
       "kind": "skill",
       "name": "interview",
       "source": "system-configs/.claude/skills/interview/SKILL.md",
-      "source_sha256": "aadd086895d4f9af1a43b41305fd55476ae90e66e160a6b667f503b06e08e686",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "364b73abc15b061063ed04ae9df6e7799e33cd0fbc2d5283eb93137a410731a9",
       "target": "system-configs/.agents/skills/interview/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
+      "name": "land",
+      "source": "system-configs/.claude/skills/land/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "7543e763f5091df7ba69a59e4fff78859506b82e78f4bc2bcedf8c640117f89e",
+      "target": "system-configs/.agents/skills/land/SKILL.md",
       "strategy": "adapted"
     },
     {
       "kind": "skill",
       "name": "mcp-builder",
       "source": "system-configs/.claude/skills/mcp-builder/SKILL.md",
-      "source_sha256": "bbb34dd9944ebe552371453907b1d61a80ed90f157e1ace24b09ef28f0361fa3",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "9b07b12f260150d4d894110b92e7dc16138f1ae6a33fb89db48e736137890432",
       "target": "system-configs/.agents/skills/mcp-builder/SKILL.md",
       "strategy": "adapted"
     },
@@ -232,14 +380,25 @@
       "kind": "skill",
       "name": "merge",
       "source": "system-configs/.claude/skills/merge/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "7d67ea2388015f4e863811a805f4a305c6bc43e8038836731517b2d8a73be238",
       "target": "system-configs/.agents/skills/merge/SKILL.md",
       "strategy": "adapted"
     },
     {
       "kind": "skill",
+      "name": "papercuts",
+      "source": "system-configs/.claude/skills/papercuts/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "8447600b2ef6f34ec4380c1d558fa4b4838353ad2fd4e7fe130bd5ce7b5f4325",
+      "target": "system-configs/.agents/skills/papercuts/SKILL.md",
+      "strategy": "adapted"
+    },
+    {
+      "kind": "skill",
       "name": "pdf",
       "source": "system-configs/.claude/skills/pdf/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "6a1feda4d8897c8abc3d15eb3876ea68a396202117209aea9e85d9ffc2cf4c08",
       "target": "system-configs/.agents/skills/pdf/SKILL.md",
       "strategy": "independent-equivalent"
@@ -248,7 +407,8 @@
       "kind": "skill",
       "name": "plan",
       "source": "system-configs/.claude/skills/plan/SKILL.md",
-      "source_sha256": "814bc0bbd15ac897b99a3452b1740e0fa0ab4ef58301fef3477182b295fff52e",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "ef3acfb9829fd9b0dd00359cf3e45f9bd2465dbcea901e15d027afbc0b32e563",
       "target": "system-configs/.agents/skills/plan/SKILL.md",
       "strategy": "adapted"
     },
@@ -256,7 +416,8 @@
       "kind": "skill",
       "name": "pptx",
       "source": "system-configs/.claude/skills/pptx/SKILL.md",
-      "source_sha256": "713e8165a732b98f2e390fdfa47bf2dd5ca4de01ef32bb788032b86fa4893b65",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "3aa5be9a438c7b54b589ef6d2d9ee131bc81a2a4a55cd9a98e293da55d3367f9",
       "target": "system-configs/.agents/skills/pptx/SKILL.md",
       "strategy": "independent-equivalent"
     },
@@ -264,7 +425,8 @@
       "kind": "skill",
       "name": "pr",
       "source": "system-configs/.claude/skills/pr/SKILL.md",
-      "source_sha256": "92ecf90b72205d73592c888b3b5ff2633d048e67a303aeb03fb5561b6ff40239",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "e369c6d8a003c12e44c45a1dc2f50567f78c50d07ead00040f6b8f41e2d0d639",
       "target": "system-configs/.agents/skills/pr/SKILL.md",
       "strategy": "adapted"
     },
@@ -272,7 +434,8 @@
       "kind": "skill",
       "name": "prime",
       "source": "system-configs/.claude/skills/prime/SKILL.md",
-      "source_sha256": "02b852de51ef4e5d7ef314bcca849eb25ffe06acea23110ad7df28cfbd8893bc",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "2f2975b4f6db76a92222377786a9f3cc190625363ae2b1e24712c4bce1ce8865",
       "target": "system-configs/.agents/skills/prime/SKILL.md",
       "strategy": "adapted"
     },
@@ -280,7 +443,8 @@
       "kind": "skill",
       "name": "process-linear",
       "source": "system-configs/.claude/skills/process-linear/SKILL.md",
-      "source_sha256": "88958ecba1b8a64707fd21b6fbf68d30bacde7dd837e29ff928960e9022b32c9",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "22b1deb8ac4aca9cc28a3b55ee4d276c95753d530c765eabc28124be91c30770",
       "target": "system-configs/.agents/skills/process-linear/SKILL.md",
       "strategy": "adapted"
     },
@@ -288,7 +452,8 @@
       "kind": "skill",
       "name": "prompt",
       "source": "system-configs/.claude/skills/prompt/SKILL.md",
-      "source_sha256": "0c50577de2c4f411a9315478603bd39830e17b9dbbe4990d18dc6343aaf2894c",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "324930c97a97f96ebf6c1f98df6681580f27676db39cca4b205251c4da65e05f",
       "target": "system-configs/.agents/skills/prompt/SKILL.md",
       "strategy": "adapted"
     },
@@ -296,7 +461,8 @@
       "kind": "skill",
       "name": "push",
       "source": "system-configs/.claude/skills/push/SKILL.md",
-      "source_sha256": "f00b90563e6476cd51df3bdd5b305aaf2ddcfb66d84e68d57f7070598d517b8d",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "a2372512d1194ce9c09c70459de2537780289b493018b4363f035425549fe532",
       "target": "system-configs/.agents/skills/push/SKILL.md",
       "strategy": "adapted"
     },
@@ -304,6 +470,7 @@
       "kind": "skill",
       "name": "rebase",
       "source": "system-configs/.claude/skills/rebase/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "930e2fe42534ddb1941571b5975dccbd4c301991a5395fea9bad2ea4ae6852a4",
       "target": "system-configs/.agents/skills/rebase/SKILL.md",
       "strategy": "adapted"
@@ -312,7 +479,8 @@
       "kind": "skill",
       "name": "resolve-comments",
       "source": "system-configs/.claude/skills/resolve-comments/SKILL.md",
-      "source_sha256": "8e8b0bac02a04490deabc8ffb39ef8f9d78638ee3c7ccf3533f2920b4990a701",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "45f9ec1f17950746bb53be458721647aec6d262337de1cf30329bbc8722d4cdb",
       "target": "system-configs/.agents/skills/resolve-comments/SKILL.md",
       "strategy": "adapted"
     },
@@ -320,7 +488,8 @@
       "kind": "skill",
       "name": "review",
       "source": "system-configs/.claude/skills/review/SKILL.md",
-      "source_sha256": "58013afb6ed2cca620606f0bf21d9764da64df07a4a1ae5c41a2d773922e7cfc",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "0d62fee3a34f253e101720ff8238503fc83bce81ba4616c79b5ccd1cb4f27b83",
       "target": "system-configs/.agents/skills/review/SKILL.md",
       "strategy": "adapted"
     },
@@ -328,7 +497,8 @@
       "kind": "skill",
       "name": "ship-it",
       "source": "system-configs/.claude/skills/ship-it/SKILL.md",
-      "source_sha256": "5b42685bf90ce19d4fe6347f32309fb068592ff2fd6bb1dd545646b886b040be",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "f17847266ff431a521fcb471b81d41951a263dc3130d50553a97ca4a167e8fa6",
       "target": "system-configs/.agents/skills/ship-it/SKILL.md",
       "strategy": "adapted"
     },
@@ -336,6 +506,7 @@
       "kind": "skill",
       "name": "test",
       "source": "system-configs/.claude/skills/test/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "e7c100dda119454ba44518ddcb76d03b6f50b1977acb5ea1a6cdb19985a195c7",
       "target": "system-configs/.agents/skills/test/SKILL.md",
       "strategy": "adapted"
@@ -344,7 +515,8 @@
       "kind": "skill",
       "name": "verify",
       "source": "system-configs/.claude/skills/verify/SKILL.md",
-      "source_sha256": "d554d8221b6a3b97d87735079e585ac511d58cf0b2d57006a5752c908c97fda1",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_sha256": "7358085f6111a7c5170fae997f1ff1e6370163c91930efad15883212b3fa5742",
       "target": "system-configs/.agents/skills/verify/SKILL.md",
       "strategy": "adapted"
     },
@@ -352,6 +524,7 @@
       "kind": "skill",
       "name": "watch",
       "source": "system-configs/.claude/skills/watch/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "58a567a39b89bece5a476e6e4b37fdaa0804c2c2752660e5a4e5a8f214ce0c04",
       "target": "system-configs/.agents/skills/watch/SKILL.md",
       "strategy": "adapted"
@@ -360,6 +533,7 @@
       "kind": "skill",
       "name": "webapp-testing",
       "source": "system-configs/.claude/skills/webapp-testing/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "c3233bbee5401397d3016f4822810d4f7062c1c2623ec656b8d88f0ac281ab73",
       "target": "system-configs/.agents/skills/webapp-testing/SKILL.md",
       "strategy": "adapted"
@@ -368,9 +542,64 @@
       "kind": "skill",
       "name": "xlsx",
       "source": "system-configs/.claude/skills/xlsx/SKILL.md",
+      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
       "source_sha256": "98e7c13080843acb24bdec16117ad59a52e9b0f1e98dfe764da0e508149a49fa",
       "target": "system-configs/.agents/skills/xlsx/SKILL.md",
       "strategy": "independent-equivalent"
+    }
+  ],
+  "mappings": [
+    {
+      "kind": "skill",
+      "name": "codex-review",
+      "source": "system-configs/.claude/skills/codex-review/SKILL.md",
+      "source_sha256": "05553ff6d1cc4855d62d3e93ec8ab735f9b571f0362afb04a88ea2c107e80350",
+      "targets": [
+        "system-configs/.agents/skills/review/references/pre-publish.md",
+        "system-configs/.agents/skills/pr/SKILL.md",
+        "system-configs/.agents/skills/ship-it/SKILL.md"
+      ],
+      "reason": "Native independent review of exact intended content; no recursive CLI or copied credentials."
+    }
+  ],
+  "exclusions": [
+    {
+      "scope": "Claude runtime settings, hooks, Jev routing, leases, stop gates, transcript parsers and session resume",
+      "reason": "Host-specific infrastructure; native tools, authorization and bounded workflows carry the portable intent."
+    },
+    {
+      "scope": "Restricted docx/pdf/pptx/xlsx implementations, assets and Office shims",
+      "reason": "Source licenses prohibit redistribution/derivatives; retain independently authored equivalents."
+    },
+    {
+      "scope": "Claude model pins and agent tool/memory/permission metadata",
+      "reason": "Codex roles inherit host model, tools and permissions; custom-agent sandbox overrides are not effective."
+    },
+    {
+      "scope": "Automatic Higgsfield CLI installation, auth/credential copying and remote generation/deployment during sync",
+      "reason": "Optional service operations belong to explicitly authorized skill use, not config installation."
+    }
+  ],
+  "global_instructions_sources": [
+    {
+      "source": "system-configs/.claude/output-styles/executive.md",
+      "source_sha256": "ddcf3348dd38b00dfddc3182d1895ec0a13d101c1ba6537f5e7a33da82062582",
+      "target": "system-configs/.codex/AGENTS.md"
+    },
+    {
+      "source": "system-configs/.claude/rules/git-safety.md",
+      "source_sha256": "c65ba05a4f443c124bebe7273a4f02a1eb57f48b9fbdc549dd53fa7958c8c6de",
+      "target": "system-configs/.codex/AGENTS.md"
+    },
+    {
+      "source": "system-configs/.claude/rules/repo-location.md",
+      "source_sha256": "ce91b6dcffbf138bc20ca9788d5de871763ccc2f2b668d145132981882554129",
+      "target": "system-configs/.codex/AGENTS.md"
+    },
+    {
+      "source": "system-configs/.claude/rules/prompt-authoring.md",
+      "source_sha256": "9ca5d8270bf191a69e283763ff06b568708dd3fad186d385080866f9a3f1389c",
+      "target": "system-configs/.codex/AGENTS.md"
     }
   ]
 }

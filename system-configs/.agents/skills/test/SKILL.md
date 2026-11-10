@@ -1,7 +1,7 @@
 ---
 name: "test"
 description: "Discover and run a project’s test suite, or create tests when requested. Reports failures without silently repairing them."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/test/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/test/SKILL.md"}
 ---
 
 # test

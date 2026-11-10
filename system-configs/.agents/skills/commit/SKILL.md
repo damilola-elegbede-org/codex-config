@@ -1,7 +1,7 @@
 ---
 name: "commit"
 description: "Commit the intended changes with a clear message and the repository’s authorized identity. Use when changes are ready to commit; supports safe amend."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/commit/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/commit/SKILL.md"}
 ---
 
 # commit

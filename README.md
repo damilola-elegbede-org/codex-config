@@ -59,10 +59,25 @@ also apply to fleet processes that do not supply higher-priority overrides.
 
 ## Skills and agents
 
-The repository includes Codex equivalents of all **38 skills and 8 subagents**
-from `claude-config` at `cb257acb72ef568efc5d9dc2c25c365b179383b0`.
+The repository includes **50 skills and 9 native agent definitions**, reviewed
+against `claude-config` at `06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4`.
+The source has 51 skills: `codex-review` maps to the existing native review
+workflow. The bounded Codex `feature-agent` is retained alongside the new
+`experiment-runner`, although upstream retired its Claude feature agent.
 [Migration inventory and limits](docs/CLAUDE-MIGRATION.md) explain the adaptations;
 [the provenance manifest](docs/claude-migration.json) records every source path and hash.
+
+The refresh adds goal-status, PR landing follow-through, explicit-log papercut
+analysis, controlled experiments, and eight optional Higgsfield workflows. The
+Higgsfield skills apply to requests for that service; their CLI, account, and
+export dependencies are checked when used. Sync does not install those tools,
+authenticate, upload files, generate media, or consume service credits.
+The Executive style opens with the conclusion, `You`, and `Unsure` lines.
+
+Agent instructions preserve assigned ownership and inherit the session's model
+and permissions. A custom agent TOML cannot create a separate read-only sandbox;
+review roles are instructed to remain read-only. See the
+[native agent contract](https://learn.chatgpt.com/docs/agent-configuration/subagents).
 
 Sync installs `system-configs/.agents/skills/` into `~/.agents/skills/`, including
 shared office resources, and `system-configs/.codex/agents/*.toml` into

@@ -1,14 +1,16 @@
 ---
 name: "review"
 description: "Review a branch, commit, working diff, or requested wider codebase for consequential defects. Deep mode adds security and accessibility perspectives."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/review/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/review/SKILL.md"}
 ---
 
 # review
 
 Identify the explicit scope; otherwise compare the branch to its verified base and include staged and unstaged changes. Full mode examines the requested tracked codebase. No diff is no changed code to review, not proof of quality.
 
-Default review is independent and read-only. Use code-reviewer if delegation is permitted; otherwise inspect directly. Deep mode adds security-auditor and a separate accessibility brief, respecting concurrency limits. Use the corresponding prompts in references/; do not pin Claude models or assume missing custom agent types.
+Review is read-only. Prefer an independent code-reviewer when delegation is permitted; otherwise inspect directly and disclose the lack of independence. Deep mode adds security-auditor and a separate accessibility brief, respecting concurrency limits. Use the corresponding prompts in references/; do not pin Claude models or assume missing custom agent types.
+
+For pre-publish review and bounded repair, read references/pre-publish.md. Include task-owned new files explicitly; a normal git diff omits untracked content. Use the current base and content identity to validate any reused result.
 
 Find concrete failure scenarios, supported by file/line evidence, and prioritize repository-specific risks over mechanical nits already covered by CI. Deduplicate matching findings without dropping disagreement. Write .tmp/review-local.json with schema_version 1.0, branch, issues, and walkthrough as described in ../resolve-comments/references/schemas.md. Invalid or missing reviewer output is an incomplete review, never a clean pass.
 

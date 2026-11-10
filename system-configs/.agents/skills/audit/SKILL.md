@@ -1,7 +1,7 @@
 ---
 name: "audit"
 description: "Audit Codex skill and agent definitions for schema, resource, and configuration integrity. Use for configuration ecosystem checks, with optional scoped repairs."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/audit/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/audit/SKILL.md"}
 ---
 
 # audit
