@@ -182,7 +182,7 @@ class PublicHTTPSTests(unittest.TestCase):
     def test_private_multicast_scoped_and_mixed_answers_fail_before_connect(self):
         rejected = [
             ["127.0.0.1"], ["10.0.0.1"], ["169.254.169.254"], ["0.0.0.0"],
-            ["::1"], ["fc00::1"], ["fe80::1%en0"], ["::ffff:127.0.0.1"],
+            ["::1"], ["fc00::1"], ["fec0::1"], ["fe80::1%en0"], ["::ffff:127.0.0.1"],
             ["224.0.0.1"], ["ff02::1"], ["8.8.8.8", "192.168.1.1"], [],
         ]
         for name, download in WRAPPERS:

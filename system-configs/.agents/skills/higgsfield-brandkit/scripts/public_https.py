@@ -64,6 +64,7 @@ def public_addresses(hostname: str, port: int) -> tuple[tuple[int, tuple], ...]:
             or candidate.is_multicast
             or candidate.is_reserved
             or candidate.is_unspecified
+            or getattr(candidate, "is_site_local", False)
             for candidate in (ip, mapped) if candidate is not None
         ):
             raise RuntimeError("HTTPS host resolves to a non-public address")
