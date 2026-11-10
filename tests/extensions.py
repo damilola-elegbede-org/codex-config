@@ -353,6 +353,15 @@ class Extensions(unittest.TestCase):
         codex.parent.mkdir(exist_ok=True)
         codex.write_text('#!/bin/sh\necho "Model provider __nonexistent__ not found" >&2\nexit 1\n')
         codex.chmod(0o755)
+        node = codex.parent / "node"
+        node.write_text('#!/bin/sh\nif [ "$1" = --version ]; then echo v22.0.0; fi\n')
+        node.chmod(0o755)
+        npm = codex.parent / "npm"
+        npm.write_text('#!/usr/bin/env python3\nimport json\nfrom pathlib import Path\n'
+                       'p=Path.cwd()\nv=json.loads((p/"package.json").read_text())["dependencies"]["ai"]\n'
+                       '(p/"node_modules/ai").mkdir(parents=True)\n'
+                       '(p/"node_modules/ai/package.json").write_text(json.dumps({"version":v}))\n')
+        npm.chmod(0o755)
         for name in ("scutil", "hostname"):
             detector = codex.parent / name
             detector.write_text('#!/bin/sh\necho generic-auto-host\n')
@@ -379,6 +388,8 @@ class Extensions(unittest.TestCase):
         self.assertTrue((test_home / ".agents/skills/office-common/package-check.py").exists())
         self.assertEqual((test_home / ".agents/skills/colorwheel/SKILL.md").read_bytes(),
                          (SKILLS / "colorwheel/SKILL.md").read_bytes())
+        self.assertEqual((test_home / ".codex/hooks.json").read_bytes(),
+                         (ROOT / "system-configs/.codex/hooks.json").read_bytes())
 
     def test_unknown_host_full_sync_dry_run_and_install(self):
         test_home, env = self.sync_environment()
@@ -403,7 +414,8 @@ class Extensions(unittest.TestCase):
         shutil.copytree(ROOT / "scripts", repo / "scripts")
         (repo / "sync-manifests").mkdir()
         for key, relative in (("agents_md", ".codex/AGENTS.md"),
-                              ("skills", ".agents/skills"), ("agents", ".codex/agents")):
+                              ("skills", ".agents/skills"), ("agents", ".codex/agents"),
+                              ("hooks", ".codex/hooks.json")):
             with self.subTest(surface=key):
                 source = self.work / f"{key}-source"
                 shutil.copytree(ROOT / "system-configs", source)
@@ -444,6 +456,7 @@ class Extensions(unittest.TestCase):
             "profiles": (".codex/code.config.toml", source_codex / "code.config.toml", ".codex/think.config.toml"),
             "skills": (".agents/skills/colorwheel/SKILL.md", SKILLS / "colorwheel/SKILL.md", ".agents/skills/ask/SKILL.md"),
             "agents": (".codex/agents/architect.toml", AGENTS / "architect.toml", ".codex/agents/debugger.toml"),
+            "hooks": (".codex/hooks.json", source_codex / "hooks.json", ".codex/hooks/codex-hooks.py"),
         }
         for key in ("config_owned_keys", *surfaces):
             with self.subTest(override=key):

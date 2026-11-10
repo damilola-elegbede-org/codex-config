@@ -102,10 +102,10 @@
       "kind": "skill",
       "name": "ask-jev",
       "source": "system-configs/.claude/skills/ask-jev/SKILL.md",
-      "source_commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4",
+      "source_commit": "e1c3210b3938d4ac0a6452baf85b9089e9267371",
       "source_sha256": "b70b103e022a3f3dbf426d2f968aea9458e4162bc6b9253b2ca873f66a77de04",
       "target": "system-configs/.agents/skills/ask-jev/SKILL.md",
-      "strategy": "adapted"
+      "strategy": "adapted-native-jev"
     },
     {
       "kind": "skill",
@@ -564,8 +564,8 @@
   ],
   "exclusions": [
     {
-      "scope": "Claude runtime settings, hooks, Jev routing, leases, stop gates, transcript parsers and session resume",
-      "reason": "Host-specific infrastructure; native tools, authorization and bounded workflows carry the portable intent."
+      "scope": "Claude-specific runtime settings, transcript approval leases, memory/session formats and unsupported hook output replacement",
+      "reason": "Native lifecycle hooks are now explicitly ported; per-resource mappings and exclusions are in hooks_inventory."
     },
     {
       "scope": "Restricted docx/pdf/pptx/xlsx implementations, assets and Office shims",
@@ -600,6 +600,345 @@
       "source": "system-configs/.claude/rules/prompt-authoring.md",
       "source_sha256": "9ca5d8270bf191a69e283763ff06b568708dd3fad186d385080866f9a3f1389c",
       "target": "system-configs/.codex/AGENTS.md"
+    }
+  ],
+  "hooks_source_commit": "e1c3210b3938d4ac0a6452baf85b9089e9267371",
+  "hooks_inventory": [
+    {
+      "source": "system-configs/.claude/settings.json",
+      "source_sha256": "3d064da8b3d9e46a3f1151aae7ba94fa9799e10d91d781851e6c96556e574000",
+      "disposition": "adapted",
+      "target": "system-configs/.codex/hooks.json",
+      "reason": "Six verified native events; deterministic Git/patch guards and bounded advisory context. No Claude-only events or approval leases."
+    },
+    {
+      "source": "system-configs/.claude/hooks/exit_hook.sh",
+      "source_sha256": "885aab453a11a888a640308c024e252be2c8165f9b202f268645cc60d14ae7fa",
+      "disposition": "excluded",
+      "reason": "Claude session cleanup/speech services are not installed."
+    },
+    {
+      "source": "system-configs/.claude/hooks/gate-rules.json",
+      "source_sha256": "b5d1d32700037c52442c5737a0015335cdc8e599c83ecf807f51b1c612ab23d3",
+      "disposition": "excluded",
+      "reason": "Claude approval/tool matching is replaced by narrow native guards and session authority."
+    },
+    {
+      "source": "system-configs/.claude/hooks/gate.sh",
+      "source_sha256": "4721bba48f5707453b8d4610edebe8276916a42c40460cba9279023c80d5d847",
+      "disposition": "excluded",
+      "reason": "Claude transcript approval leases are not native authorization."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a1-read-trim.sh",
+      "source_sha256": "39228978acaa89369e55dcd2cdb6918fcfbc4e3f582218b30540c94193a3f102",
+      "disposition": "excluded",
+      "reason": "No native Read event or compatible updatedToolOutput replacement."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a2-search-rank.sh",
+      "source_sha256": "8ded13b1d3f1b907fe0e4faa9766032917e53bf12dc4b3fb3537f392789adecb",
+      "disposition": "excluded",
+      "reason": "No native Grep/Glob event or compatible output replacement; explicit ask-jev provides ranking."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a3-bash-trim.sh",
+      "source_sha256": "5cbdfe48e2bc7a5abd99ad956273d577316ed1dc1491d2b9c1b3eef811744292",
+      "disposition": "excluded",
+      "reason": "Native PostToolUse does not provide Claude updatedToolOutput replacement."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a4-task-boundary.sh",
+      "source_sha256": "f6d282709d3b1f26163fb67f059b7038735fefe7756ad51f049eeb156101d70b",
+      "disposition": "excluded",
+      "reason": "Claude memory/transcript task-boundary state is not shared with Codex."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a5-compact-reinject.sh",
+      "source_sha256": "a87f2bd57503da72eaee899e4efefa35283e57951592e692394ca647d63ddffd",
+      "disposition": "mapped",
+      "reason": "SessionStart compact reminder; no Claude transcript or memory import.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a6-agent-router.sh",
+      "source_sha256": "1310ec6e98233e047a7d6880288b9765ce64ce2c7d6b486e15b407e9fd80050b",
+      "disposition": "excluded",
+      "reason": "Agent names, tool schemas, delegation authority and model selection belong to the native session."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a7-a8-prompt-context.sh",
+      "source_sha256": "b9d8c8f2e6eb6f53a8ddd6c97ef7dbd61dcd1926efc9b0ffdeaea44fd258f9cd",
+      "disposition": "mapped",
+      "reason": "Bounded native Jev skill advice from fixed intent labels.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/a9-skill-router.sh",
+      "source_sha256": "f4b771b52246fab720cdd50aaa97a5413d62a8f2c8d7f8dc449edfb5c8cd2624",
+      "disposition": "mapped",
+      "reason": "Native workflow advice; no fabricated loaded-skill transcript state.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/audit-digest.sh",
+      "source_sha256": "f6a3f08e9ff90cdca46dc090fd833b5b3dbba3e9a750d43a32d119dd73b21bdf",
+      "disposition": "excluded",
+      "reason": "Personal reports and automatic notifications are not installed."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/client.mjs",
+      "source_sha256": "577aaeed3cd2e662c320ae1830274bcbc5ce5407dd1db79992806203ffce69dc",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/client.mjs"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/ctx-lib.sh",
+      "source_sha256": "4edfd1099c5efbb2ad4519e1d2f1372d826da3e6f0f0f10350ee6cc6371f9ce0",
+      "disposition": "excluded",
+      "reason": "Claude transcript/output/context helper replaced by native dispatcher and bounded state."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/executive-lint.sh",
+      "source_sha256": "eaf2001dcad03c308cceb9c7deb5a26400780d3e4b3fe0cdebeeb994444b925f",
+      "disposition": "mapped",
+      "reason": "Advisory bounded Stop style checks, matching upstream shadow intent.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/failure-classify.sh",
+      "source_sha256": "517d5d7e2e966ee88cb6b9c593750102fd6db53c2e5501275285b58a92a98b17",
+      "disposition": "mapped",
+      "reason": "Advisory fixed error labels; raw command/output never exported.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/file-org-guard.sh",
+      "source_sha256": "757981d1d3cb14df90f4d149d3f0c1f7220d5f42f262d53deda09d546af0e0b8",
+      "disposition": "mapped",
+      "reason": "Native apply_patch new-file guidance.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/gate-questions.json",
+      "source_sha256": "de7225fd5a82f3cc114cbd9430d23fb505cb1f2d393e81091b2b71f5c9cc5e98",
+      "disposition": "excluded",
+      "reason": "Model-driven permission decisions are not imported."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/interview-stop.sh",
+      "source_sha256": "6229c2e400335871898dcfd7f1e4b2488aa1f9a50c1deaabc082670db620f00e",
+      "disposition": "excluded",
+      "reason": "Claude transcript interview enforcement is handled by native interview skill."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/jev-ask",
+      "source_sha256": "42b591dd1cd95ad924fbccc08eb49fd5f49e43ae62bf848d66885c02dcc38670",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/jev-ask"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/jev-config.json",
+      "source_sha256": "863ee464fcf8a5fc58d6b42c8f9970dd686064578239656e1490e83d9f9246d3",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/jev-config.json"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/jev-rules.json",
+      "source_sha256": "e3342342649bb96d21fb75161f208fbb311217526ea56d1de8e7398cd9f498be",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/jev-rules.json"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/link-lint.sh",
+      "source_sha256": "3f1489f59a358983d0501ee62d1c47f2053dadd4d76f6a2e4f02e1bc7a5d5065",
+      "disposition": "excluded",
+      "reason": "Link checks remain in explicit review; no extra blocking Stop gate."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/link-validate.sh",
+      "source_sha256": "fb950faa19b42089dab97e6a06d66ed0b166649b1d0cfc7cd9227668425f84e3",
+      "disposition": "excluded",
+      "reason": "Automatic unrelated URL fetching is not enabled."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/memory-dup-guard.sh",
+      "source_sha256": "d455ce71ba37ab76943c31378f9bf543e2f7243b4116379a97d72fc5a6cbb417",
+      "disposition": "excluded",
+      "reason": "Claude memory storage is not imported."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/notification-urgency.sh",
+      "source_sha256": "2a1cd075f64f439990d18da3904ecd26b691825e4332017938ad459c7e0a075f",
+      "disposition": "excluded",
+      "reason": "No equivalent native Notification event is registered."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/package-lock.json",
+      "source_sha256": "d14b411caa38646609828836465da75d2dd8e28e759ecfc23b0713a30ff6e057",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/package-lock.json"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/package.json",
+      "source_sha256": "56d88094d479702dd63e40c26ba133bd5eea7360383f91bd04585c94513c5921",
+      "disposition": "adapted",
+      "reason": "Portable direct native client; Codex paths, bounded requests, private metadata logs and pinned SDK cache.",
+      "target": "system-configs/.codex/hooks/jev/package.json"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/papercut-dedupe.sh",
+      "source_sha256": "75de94b66018871e2274884fffcaeb322228712f054aeb87547b14cefb8c0950",
+      "disposition": "excluded",
+      "reason": "Explicit papercuts skill owns identified logs; no invented shared log."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/papercut-grep.sh",
+      "source_sha256": "1dcf9f8831a3da4f3507140595fa3caaf0e58a25858915dcf58b4293cc2c6ae7",
+      "disposition": "excluded",
+      "reason": "Explicit papercuts workflow rather than Claude PostToolUseFailure event."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/papercut-nudge.sh",
+      "source_sha256": "bc9aaad3a508c8f208c3a66bed9dfe8e399547d459dec5f70eb14684d79e99e0",
+      "disposition": "excluded",
+      "reason": "Explicit papercuts workflow rather than automatic cross-runtime log collection."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/postcompact-log.sh",
+      "source_sha256": "52fd3e74fa584ef7d17f826c3c7176091d93df8ce21b844677dd74ba30cc99fd",
+      "disposition": "mapped",
+      "reason": "Native metadata-only compaction state.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/pr-draft-guard.sh",
+      "source_sha256": "44c3ed352d69a00fbb9acacd9e9161d4949dcf41fe6a595522f9733cd2438950",
+      "disposition": "excluded",
+      "reason": "PR readiness follows native pr/land workflows and authorized user intent."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/pr-land-status.sh",
+      "source_sha256": "63feee7ead937185276c0dc29b3946160e76561f91c04f639ad95221f51e6054",
+      "disposition": "excluded",
+      "reason": "Current-head GitHub status checks remain in native land workflow."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/pr-landing-gate.sh",
+      "source_sha256": "9f1031d3834172ecd77e97b06569a598a7a37e44e4b5ee374274d83905cacc9d",
+      "disposition": "mapped",
+      "reason": "Advisory follow-through reminder; actual checks and merge authority stay in land workflow.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/registry.sh",
+      "source_sha256": "3bf210c9ab78692ac264bc844c4b61094e331f41776e98370579f946d3363ca2",
+      "disposition": "excluded",
+      "reason": "Minimal native registry lives in the portable client."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/retry-counter.sh",
+      "source_sha256": "fcfb0291c9db019f56cc76539f7d273930d85171266ec93054d918596bf61763",
+      "disposition": "mapped",
+      "reason": "Only known structured completion status updates counters; raw native stdout remains unknown.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/rules-events-lib.sh",
+      "source_sha256": "514444cef18f2c64a94025dcc486354fa966a59e6324f077321220c353fe975e",
+      "disposition": "excluded",
+      "reason": "Claude event/approval schemas are not imported."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/rules.d/context.json",
+      "source_sha256": "f682ac0e3aefd7b05bcaabb6095a8672ba25d6f7f65a88a878aac1e41cb9defe",
+      "disposition": "excluded",
+      "reason": "Only explicitly adapted native advice rules are included."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/rules.d/gates.json",
+      "source_sha256": "65947050202c2d28eb220be40b7a539313aebcf13a13adc7c940090d0c3511d5",
+      "disposition": "excluded",
+      "reason": "Model-driven permission decisions are not imported."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/rules.d/rules-events.json",
+      "source_sha256": "7ab0be921f18957461d8d950fb9224a8959838fd89ba7a1843bcf3ef1d59897d",
+      "disposition": "excluded",
+      "reason": "Native compatible checks are explicitly adapted; unrelated model gates remain excluded."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/rules.d/skills.json",
+      "source_sha256": "6a14f33a6656623dfef331c1086b034b1b52445e0dc89970b213969d759c7ea2",
+      "disposition": "excluded",
+      "reason": "Only native ask-jev ranking rule is included."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/session-check.sh",
+      "source_sha256": "4a3cbb4183479b625eb5a37f10101e242fb58a2127d71ac33ca8a8d432a6a874",
+      "disposition": "mapped",
+      "reason": "Native client prerequisite status; no Claude-specific runtime checks.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/session-end-memory.sh",
+      "source_sha256": "a99e902c1b33e7d9805b54867208b2e0e2af87635f92da3c8b661cd99dd666aa",
+      "disposition": "excluded",
+      "reason": "No implicit cross-provider memory harvesting."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/session-start-project.sh",
+      "source_sha256": "50940b9b8e06a7e0dd5159a4dd94c9fc867a2667888f1cb7cb2399339fd87b10",
+      "disposition": "mapped",
+      "reason": "Native session/worktree context; no Claude memory import.",
+      "target": "system-configs/.codex/hooks/codex-hooks.py"
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/skill-catalog.py",
+      "source_sha256": "b7982eb82297b767119ab420092ececcced2d189341ccdcbffccfb9ae45954be",
+      "disposition": "excluded",
+      "reason": "Native dispatcher uses bounded fixed workflow names and installed-name presence."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev/stopfailure-hint.sh",
+      "source_sha256": "4c17fb14c193af9337ce5279cab2655597cd4ddb632fb2c6a807e282f6263f03",
+      "disposition": "excluded",
+      "reason": "No equivalent native StopFailure event is registered."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev-ask-channel.sh",
+      "source_sha256": "960afb877abe8125568c907fa820570c20728d335a0362a3d66a9062dc9ad024",
+      "disposition": "excluded",
+      "reason": "Claude AskUserQuestion routing is incompatible with native question-tool contracts."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev-gate-lib.sh",
+      "source_sha256": "e01678d91955ecdb32dd2a3a4585378700ebf2164c3ce248f69722ca044928e5",
+      "disposition": "excluded",
+      "reason": "Claude approval/lease bridge is not native authorization."
+    },
+    {
+      "source": "system-configs/.claude/hooks/jev-gate.sh",
+      "source_sha256": "3055bdb460eec0b98cd003ce6169d17fe893651115b323045125f60cfe13d440",
+      "disposition": "excluded",
+      "reason": "Model approval/permission inference is not imported."
+    },
+    {
+      "source": "system-configs/.claude/hooks/session_registry.sh",
+      "source_sha256": "ecacf04cc6e6949ca0a2babc6e988c296c7f4ef7c304007d0f67a56b9b12b8f9",
+      "disposition": "excluded",
+      "reason": "Personal Claude session registry is outside native hook portability."
+    },
+    {
+      "source": "system-configs/.claude/hooks/session_start_version_check.sh",
+      "source_sha256": "9c74e31efb6a9504fa13b14ae2869656afbd862fb5cf477d85a4511fcb4c839e",
+      "disposition": "excluded",
+      "reason": "Claude-specific version checks are not applicable to native Codex."
     }
   ]
 }

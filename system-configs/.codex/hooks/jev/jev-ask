@@ -1,0 +1,10 @@
+#!/bin/sh
+# Read a JSON request from stdin; preserve exit 2 (input) and 3 (unavailable).
+set -eu
+DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
+if ! command -v node >/dev/null 2>&1; then
+  echo "jev-ask: unavailable: node_missing" >&2
+  exit 3
+fi
+exec node "$DIR/client.mjs" "$@"

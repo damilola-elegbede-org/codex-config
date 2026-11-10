@@ -57,7 +57,8 @@ AGENTS_MD=$(manifest_value agents_md true)
 SKILLS=$(manifest_value skills true)
 AGENTS=$(manifest_value agents true)
 RULES=$(manifest_value rules false)
-HOOKS=$(manifest_value hooks false)
+HOOKS=$(manifest_value hooks true)
+case "$HOOKS" in true|false) ;; *) die_preflight "hooks must be a boolean" ;; esac
 case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac
 case " $OWNED_KEYS " in
     *" projects "*|*" notice.model_migrations "*|*" tui.model_availability_nux "*) die_preflight "manifest attempts to own a never-owned Codex table" ;;
@@ -70,6 +71,12 @@ if [ "$SKILLS" = true ] && [ ! -d "$SOURCE_SKILLS" ]; then
 fi
 if [ "$AGENTS" = true ] && [ ! -d "$SOURCE_CODEX/agents" ]; then
     die_preflight "missing directory $SOURCE_CODEX/agents (agents is enabled)"
+fi
+if [ "$HOOKS" = true ] && [ ! -f "$SOURCE_CODEX/hooks.json" ]; then
+    die_preflight "missing $SOURCE_CODEX/hooks.json (hooks is enabled)"
+fi
+if [ "$HOOKS" = true ] && [ ! -d "$SOURCE_CODEX/hooks" ]; then
+    die_preflight "missing directory $SOURCE_CODEX/hooks (hooks is enabled)"
 fi
 
 # Local-ref check only: it never fetches or invokes a network Git operation.
@@ -108,7 +115,6 @@ if [ "$PROFILES" = true ]; then
     fi
 fi
 [ "$AGENTS_MD" = true ] && stage_file "$SOURCE_CODEX/AGENTS.md" AGENTS.md || true
-[ "$HOOKS" = true ] && stage_file "$SOURCE_CODEX/hooks.json" hooks.json || true
 [ "$RULES" = true ] && stage_file "$SOURCE_CODEX/rules/codex-config.rules" rules/codex-config.rules || true
 # Ship only repository theme files; never replace the user's themes directory.
 for source in "$SOURCE_CODEX"/themes/*.tmTheme; do
@@ -154,6 +160,16 @@ if ! python3 "$ROOT/scripts/sync-extensions.py" stage --stage "$STAGE/.extension
     exit 2
 fi
 
+if [ "$HOOKS" = true ]; then
+    if ! python3 "$ROOT/scripts/sync-hooks.py" stage --stage "$STAGE/.hooks" \
+        --source "$SOURCE_CODEX" --target "$TARGET_CODEX" > "$STAGE/.hook-summary"; then
+        echo "hook staging validation failed; live configuration was not changed" >&2
+        exit 2
+    fi
+    # Let the real Codex parser see the staged native hook definition too.
+    stage_file "$STAGE/.hooks/files/hooks.json" hooks.json
+fi
+
 if ! "$ROOT/scripts/validate.sh" "$STAGE"; then
     echo "staging validation failed; live configuration was not changed" >&2
     exit 2
@@ -163,6 +179,7 @@ print_diff() {
     echo "manifest: ${MANIFEST#$ROOT/}"
     echo "config: merge ($OWNED_KEYS)"
     cat "$STAGE/.extension-summary"
+    [ "$HOOKS" = true ] && cat "$STAGE/.hook-summary" || true
     diff -u "$TARGET_CODEX/config.toml" "$STAGE/config.toml" 2>/dev/null || true
     if [ -f "$STAGE/AGENTS.md" ]; then
         if [ -f "$TARGET_CODEX/AGENTS.md" ]; then
@@ -197,6 +214,15 @@ if [ "$DRY_RUN" = true ]; then
     exit 0
 fi
 
+# Resolve pinned packages before publishing any hook or configuration. This
+# changes only a private dependency cache, never credentials or hook trust.
+if [ "$HOOKS" = true ]; then
+    if ! python3 "$ROOT/scripts/sync-hooks.py" prepare --stage "$STAGE/.hooks"; then
+        echo "hook dependency preparation failed; live configuration was not changed" >&2
+        exit 2
+    fi
+fi
+
 BACKUP=
 if [ "$CREATE_BACKUP" = true ]; then
     BACKUP="$HOME/.codex-config.backup.$(date +%Y%m%d_%H%M%S)"
@@ -217,7 +243,6 @@ if [ "$CREATE_BACKUP" = true ]; then
         while IFS= read -r stale; do backup_file "$stale"; done < "$STALE_LIST"
     fi
     [ "$AGENTS_MD" = true ] && backup_file AGENTS.md || true
-    [ "$HOOKS" = true ] && backup_file hooks.json || true
     [ "$RULES" = true ] && backup_file rules/codex-config.rules || true
 fi
 install_file() {
@@ -234,6 +259,19 @@ install_checked() {
         exit 3
     fi
 }
+# Recheck all staged hook hashes before publishing other configuration. The
+# helper writes supporting resources first and hooks.json last, with backups.
+if [ "$HOOKS" = true ]; then
+    if [ -n "$BACKUP" ]; then
+        if ! python3 "$ROOT/scripts/sync-hooks.py" apply --stage "$STAGE/.hooks" --backup "$BACKUP"; then
+            echo "hook install failed; backup: $BACKUP" >&2
+            exit 3
+        fi
+    elif ! python3 "$ROOT/scripts/sync-hooks.py" apply --stage "$STAGE/.hooks"; then
+        echo "hook install failed; backup: none" >&2
+        exit 3
+    fi
+fi
 # Install the theme before publishing the config that selects it.
 for staged in "$STAGE"/themes/*.tmTheme; do
     [ -e "$staged" ] || continue
@@ -245,7 +283,6 @@ for staged in "$STAGE"/*.config.toml; do
     install_checked "$(basename "$staged")"
 done
 if [ "$AGENTS_MD" = true ] && [ -f "$STAGE/AGENTS.md" ]; then install_checked AGENTS.md; fi
-if [ "$HOOKS" = true ] && [ -f "$STAGE/hooks.json" ]; then install_checked hooks.json; fi
 if [ "$RULES" = true ] && [ -f "$STAGE/rules/codex-config.rules" ]; then install_checked rules/codex-config.rules; fi
 if [ "$PROFILES" = true ]; then
     install_checked .codex-config-managed-profiles

@@ -1,0 +1,21 @@
+{
+  "rules": {
+    "ask-jev-rank": {
+      "mode": "enforce",
+      "max_files": 60,
+      "batch_size": 20,
+      "head_lines": 40,
+      "line_chars": 240,
+      "max_file_kb": 250,
+      "timeout_ms": 6000
+    },
+    "codex-prompt-context": {
+      "mode": "shadow",
+      "timeout_ms": 1500
+    },
+    "codex-failure-classify": {
+      "mode": "shadow",
+      "timeout_ms": 1500
+    }
+  }
+}

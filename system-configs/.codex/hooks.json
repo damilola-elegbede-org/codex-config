@@ -1,0 +1,11 @@
+{
+  "description": "Codex configuration workflow hooks; Jev and Stop checks are advisory. Review definitions with /hooks before activation.",
+  "hooks": {
+    "SessionStart": [{"hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 6, "additionalContextLimit": 1500}]}],
+    "UserPromptSubmit": [{"hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 5, "additionalContextLimit": 1000}]}],
+    "PreToolUse": [{"matcher": "^(Bash|apply_patch|Edit|Write)$", "hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 5, "additionalContextLimit": 1000}]}],
+    "PostToolUse": [{"matcher": "^(Bash|mcp__.*create_pull_request)$", "hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 5, "additionalContextLimit": 1000}]}],
+    "Stop": [{"hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 3}]}],
+    "PostCompact": [{"hooks": [{"type": "command", "command": "python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/codex-hooks.py\"", "timeout": 3}]}]
+  }
+}

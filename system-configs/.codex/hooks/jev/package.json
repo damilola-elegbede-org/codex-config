@@ -1,0 +1,12 @@
+{
+  "name": "codex-jev-client",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Bounded Jev client for native Codex hooks and file ranking.",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "ai": "7.0.126"
+  }
+}

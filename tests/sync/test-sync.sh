@@ -8,6 +8,9 @@ TEST_HOME="$WORK/home"
 LIVE="$WORK/live"
 SOURCE="$WORK/source/.codex"
 mkdir -p "$TEST_HOME" "$LIVE" "$SOURCE/agents" "$WORK/source/.agents/skills" "$WORK/bin"
+mkdir -p "$SOURCE/hooks"
+printf '%s\n' 'print("{}")' > "$SOURCE/hooks/fixture.py"
+printf '%s\n' '{"hooks":{"SessionStart":[{"hooks":[{"type":"command","command":"python3 \"${CODEX_HOME:-$HOME/.codex}/hooks/fixture.py\"","timeout":5}]}]}}' > "$SOURCE/hooks.json"
 
 printf '%s\n' '#!/bin/sh' \
   'if grep -R "^bad_key" "$CODEX_HOME" >/dev/null 2>&1; then' \

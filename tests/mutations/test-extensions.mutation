@@ -1,6 +1,6 @@
 --- a/scripts/sync.sh
 +++ b/scripts/sync.sh
-@@ -52,6 +52,12 @@
+@@ -56,7 +56,13 @@
  AGENTS_MD=$(manifest_value agents_md true)
  SKILLS=$(manifest_value skills true)
  AGENTS=$(manifest_value agents true)
@@ -11,5 +11,6 @@
 +    AGENTS=false
 +fi
  RULES=$(manifest_value rules false)
- HOOKS=$(manifest_value hooks false)
+ HOOKS=$(manifest_value hooks true)
+ case "$HOOKS" in true|false) ;; *) die_preflight "hooks must be a boolean" ;; esac
  case "$CONFIG_MODE" in merge) ;; *) die_preflight "config mode must be merge" ;; esac

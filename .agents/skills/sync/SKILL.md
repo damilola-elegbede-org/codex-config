@@ -43,3 +43,16 @@ paths. Every machine installs these by default; manifest `skills: false` /
 Likewise, `agents_md: false` skips global instruction updates. Removed source extensions
 are retained until explicit retirement. On a fleet node (Mac Mini) run
 `--dry-run` first, then a `codex-review.sh` smoke, before a real sync.
+
+Native hooks are enabled by default. Sync stages and validates `hooks.json` and
+`hooks/` support files, detects customized/unmanaged conflicts, backs up changed
+owned files and records their hashes in `.codex-config-managed-hooks.json`.
+A manifest's `hooks: false` skips future hook updates without deleting files.
+Real sync prepares pinned Jev dependencies using Node.js 22+ and npm with install
+scripts disabled before publishing hooks; dry runs make no dependency or model
+requests. Dependencies live in the lock-addressed `.codex-config-deps/jev/` cache.
+No credentials or hook trust decisions are copied. After installation inspect
+native `/hooks` discovery and trust state; installation alone does not prove
+hooks execute. Use the normal review/trust mechanism for authorized definitions,
+never a trust bypass. Verify real Jev with synthetic input only, respecting the
+client's existing exclusions and credential resolution.
