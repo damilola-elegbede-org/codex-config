@@ -52,10 +52,10 @@ def validate(skills: Path, agents: Path) -> tuple[int, int]:
                     raise ValueError(f"missing {key}: {path}")
             if agent["name"] != path.stem:
                 raise ValueError(f"agent name must match filename: {path}")
-            if set(agent) - {"name", "description", "developer_instructions", "sandbox_mode"}:
+            # Permission/provider overrides in custom agent files do not create
+            # an independent sandbox. This repository inherits the host policy.
+            if set(agent) - {"name", "description", "developer_instructions"}:
                 raise ValueError(f"unsupported repository agent setting: {path}")
-            if "sandbox_mode" in agent and agent["sandbox_mode"] != "read-only":
-                raise ValueError(f"agent must inherit permissions or restrict to read-only: {path}")
             agent_count += 1
     return skill_count, agent_count
 

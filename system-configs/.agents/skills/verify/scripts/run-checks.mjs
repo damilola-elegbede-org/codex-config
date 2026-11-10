@@ -134,16 +134,22 @@ function detectChecks(dir) {
     checks.push({ id: "cargo-test", cmd: "cargo", args: ["test"], why: "Cargo.toml present" });
   }
 
-  // Markdown — config-driven, so only when the project opted in.
-  for (const cfg of [".markdownlint-cli2.jsonc", ".markdownlint-cli2.yaml", ".markdownlint.json"]) {
-    if (has(cfg)) {
-      checks.push({
-        id: "markdownlint",
-        cmd: "npx",
-        args: ["-y", "markdownlint-cli2", "**/*.md"],
-        why: cfg,
-      });
-      break;
+  // The project's Markdown script defines its owned file set. Only use a
+  // generic glob when the project opted in by config without its own command.
+  const mdScript = ["lint:markdown", "lint:md"].find((script) => scripts[script]);
+  if (mdScript) {
+    checks.push({ id: "markdownlint", cmd: npmRunner, args: ["run", mdScript], why: `package.json scripts.${mdScript}` });
+  } else {
+    for (const cfg of [".markdownlint-cli2.jsonc", ".markdownlint-cli2.yaml", ".markdownlint.json"]) {
+      if (has(cfg)) {
+        checks.push({
+          id: "markdownlint",
+          cmd: "npx",
+          args: ["-y", "markdownlint-cli2", "**/*.md", "#**/node_modules", "#.claude/worktrees", "#.tmp"],
+          why: cfg,
+        });
+        break;
+      }
     }
   }
 

@@ -2,7 +2,7 @@
 name: "webapp-testing"
 description: "Test local web applications with Playwright, screenshots, DOM inspection, console logs, and reproducible interaction steps."
 license: "Complete terms in LICENSE.txt"
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/webapp-testing/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/webapp-testing/SKILL.md"}
 ---
 
 # webapp-testing

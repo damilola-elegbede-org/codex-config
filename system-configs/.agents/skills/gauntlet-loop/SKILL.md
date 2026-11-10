@@ -1,7 +1,7 @@
 ---
 name: "gauntlet-loop"
 description: "Build a deliverable against a concrete reference using independent builder/critic rounds and a blind final panel. Use only when a rigorous gauntlet is explicitly requested."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/gauntlet-loop/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/gauntlet-loop/SKILL.md"}
 ---
 
 # gauntlet-loop
@@ -10,7 +10,7 @@ Require a named concrete reference and access to it. Confirm modality: compare l
 
 Use available Codex delegation, not a Claude Workflow tool. If independent contexts are unavailable or prohibited, stop with that limitation. Record a finite agreed cap (default proposal: five revisions per aspect and three panel cycles); do not silently promise an unbounded run. Save the prompt and progress ledger under .tmp/plans/gauntlet/. Plan-only does not launch agents. No recurrence, scheduler, production write, publishing, sending, or purchase is authorized by this skill.
 
-One persistent builder owns each disjoint aspect. Each revision returns artifact locations and addressed rubric IDs. One fresh harsh critic per aspect/round receives the artifact and rubric, without previous verdicts, and returns only located defects tagged by rubric ID. Empty defects is the pass. Close a previously open item only when the critic omits it AND the builder supplies matching current-round change evidence. Reappearing IDs are regressions. The same unresolved rubric ID for three consecutive rounds stalls that aspect; other independent work can finish.
+One persistent builder owns each disjoint aspect. Every builder pass returns finished work, artifact locations, and addressed rubric IDs. Use only the host-supported model and reasoning controls within the user’s authorization; prose such as "maximum thinking" is not an effort setting. One fresh harsh critic per aspect/round receives the artifact and rubric, without previous verdicts, and returns only located defects tagged by rubric ID. Empty defects is the pass. Close a previously open item only when the critic omits it AND the builder supplies matching current-round change evidence. Reappearing IDs are regressions. The same unresolved rubric ID for three consecutive rounds stalls that aspect; other independent work can finish.
 
 A separate integrator reconciles aspects by rubric priority. Integration defects re-enter the appropriate aspect loop; unassigned defects become explicit cross-cutting work. Do not advance to judgment with unresolved stalls.
 

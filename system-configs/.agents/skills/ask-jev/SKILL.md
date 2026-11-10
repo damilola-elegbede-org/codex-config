@@ -1,7 +1,7 @@
 ---
 name: "ask-jev"
 description: "Rank candidate source files locally before reading a large candidate set. Use for broad where-is-this-implemented questions; skips exact-symbol lookups."
-metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "cb257acb72ef568efc5d9dc2c25c365b179383b0", "source-path": "system-configs/.claude/skills/ask-jev/SKILL.md"}
+metadata: {"source-repository": "damilola-elegbede-org/claude-config", "source-commit": "06fcb1349e93860a779c14c5ac47b9bf0cbe2aa4", "source-path": "system-configs/.claude/skills/ask-jev/SKILL.md"}
 ---
 
 # ask-jev

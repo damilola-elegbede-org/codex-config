@@ -62,8 +62,13 @@ class Extensions(unittest.TestCase):
 
     def test_inventory_and_syntax(self):
         validator = load(ROOT / "scripts/validate-extensions.py", "validator")
-        self.assertEqual(validator.validate(SKILLS, AGENTS), (38, 8))
         migration = json.loads((ROOT / "docs/claude-migration.json").read_text(encoding="utf-8"))
+        self.assertEqual(validator.validate(SKILLS, AGENTS), (migration["skills"], migration["agents"]))
+        expected = {str(p.relative_to(ROOT)) for p in SKILLS.glob("*/SKILL.md")}
+        expected.update(str(p.relative_to(ROOT)) for p in AGENTS.glob("*.toml"))
+        targets = [entry["target"] for entry in migration["entries"]]
+        self.assertEqual(set(targets), expected)
+        self.assertEqual(len(targets), len(set(targets)))
         for entry in migration["entries"]:
             self.assertTrue((ROOT / entry["target"]).is_file(), entry)
         for path in SKILLS.rglob("*.py"):
@@ -72,6 +77,19 @@ class Extensions(unittest.TestCase):
             agent = tomllib.loads(path.read_text(encoding="utf-8"))
             self.assertNotIn("model", agent)
             self.assertNotIn("model_reasoning_effort", agent)
+
+    def test_agent_permission_overrides_are_rejected(self):
+        validator = load(ROOT / "scripts/validate-extensions.py", "validator")
+        agents = self.source / "agents"
+        agents.mkdir()
+        path = agents / "reviewer.toml"
+        base = 'name = "reviewer"\ndescription = "Review"\ndeveloper_instructions = "Inspect only"\n'
+        path.write_text(base)
+        self.assertEqual(validator.validate(self.source / "skills", agents), (0, 1))
+        for setting in ('sandbox_mode = "read-only"', 'approval_policy = "never"'):
+            path.write_text(base + setting + "\n")
+            with self.assertRaisesRegex(ValueError, "unsupported repository agent setting"):
+                validator.validate(self.source / "skills", agents)
 
     def test_install_update_backup_and_custom_collision(self):
         path = self.skill()

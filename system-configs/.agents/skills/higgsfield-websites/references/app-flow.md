@@ -1,0 +1,341 @@
+# App flow — `type: "app"` (Higgsfield-integrated, Quanta)
+
+You are building ONE per-website Cloudflare Worker: a **React 19 + TanStack
+Start** app that is **server-rendered (SSR)** and deploys as a single Worker
+served at the app's own subdomain. A `type: "app"` product is tightly
+integrated with Higgsfield: its users **Sign in with Higgsfield** and generate
+images/videos through the **fnf SDK**, and the app must look and feel like a
+Higgsfield product — apps render INSIDE Higgsfield, indistinguishable from its
+own tools. There is no independent brand and no wow/marketing pipeline here:
+the craft bar is Quanta's UX-craft rules.
+
+**Repo layout.** The project lives in **`app/`** — its own `package.json`,
+`src/`, `packages/`, `migrations/`, build config, and the deploy inputs
+(`app.manifest.json`, `wrangler.jsonc`). Run every `bun`/build command from
+there.
+
+## What you have to build with
+
+- **Quanta** (`@higgsfield/quanta`) — Higgsfield's design system, vendored in
+  the template. MANDATORY: use its components before writing custom chrome.
+  `references/quanta-design.md` is the working guide (tokens, components,
+  UX-craft rules, the Higgsfield integration rules); the canonical API
+  reference is `app/packages/quanta/ai/AGENTS.md` — RELY ON IT for props/APIs;
+  do NOT open or grep the component `.tsx` source to re-derive prop names.
+- **The six code layouts** (`references/app-layouts.md` +
+  `app/src/layouts/AGENTS.md`) — Studio (`studio.tsx`), Preset (`preset.tsx`),
+  App detail (`app-detail.tsx`), AI Stylist (`ai-stylist.tsx`), Skin Enhancer
+  (`skin-enhancer.tsx`), and Shots (`shots.tsx`), shipped as REAL CODE in the
+  template (not screenshots). Start from the closest one, copy it into your
+  route, and adapt it — build from the code plus the reusable pieces in
+  `app/src/components`, never from a screenshot.
+- **Custom components for gaps** — for anything Quanta lacks (date picker,
+  calendar, data table, …), build a small component from Quanta primitives +
+  `q-` tokens in the app's own `app/src/components/`. Never add a third-party
+  UI library, never edit the vendored `@higgsfield/quanta` package, never
+  restyle a Quanta component (see `references/quanta-design.md` rule 5).
+- **Icons** — Google Material Symbols outlined 400, imported per icon
+  (`@material-symbols/svg-400/outlined/<name>.svg?react`). The generate-button
+  sparkle is the branded `@/assets/icon-sparkles-soft.svg?react`.
+- **fnf SDK** (`references/fnf-sdk.md`) + **React bindings**
+  (`references/fnf-react.md`) — generation jobs, media, profile, workspace,
+  credits. `@higgsfield/fnf` ships the SDK core plus ONE bundled adapter:
+  `createWorkflowPlatformAdapter` at `@higgsfield/fnf/workflow-platform` (the
+  old `@higgsfield/fnf/adapters` subpath no longer exists; other adapters live
+  in `@higgsfield/fnf-adapters`, which generated apps do not use). Package
+  guides are canonical for APIs: `app/packages/fnf/ai/AGENTS.md` and
+  `app/packages/fnf-react/ai/AGENTS.md` — rely on them; do NOT grep the SDK
+  source to re-derive method names/params.
+- **Higgsfield auth** (`references/auth.md`) — the `/api/user` proxy,
+  `/__auth/login`/`/__auth/logout`, server-side re-checks. Mandatory for every
+  app (see rule 3).
+- **Infra** — D1 / R2 / KV / Durable Objects / containers via
+  `app/app.manifest.json` (rules 4-6; heavy/long-running work:
+  `references/containers.md`). Runtime + routing:
+  `references/runtime-and-infra.md`. Security: `references/security.md`.
+- **Launch cover** (`references/app-cover.md`) — the branded 3:2 cover + OG
+  image. REQUIRED before every publish (`og_image_url` +
+  `marketplace_cover_url` are mandatory feed-card fields).
+
+**Assets.** Reuse suitable supplied assets. Generate missing imagery through Higgsfield only within the authorized project scope and credit budget; do not leave placeholder output in a finished app.
+
+## Build workflow
+
+Read `references/quanta-design.md` for the platform design contract:
+
+1. **Resolve the brief** — use the chosen Higgsfield `app` type and existing answers; ask only for missing model, screen, or scope decisions. Creating service resources, using credits, live deployment, and feed listing must fall within the user's requested workflow.
+2. **Create** — `higgsfield website create --type app` when app creation is authorized. Read the returned scaffold's `app/AGENTS.md`.
+3. **Plan screens** — choose a suitable code layout from `app/src/layouts`, read `app/src/layouts/AGENTS.md`, and model first-run, empty, busy, success, and error states. See `references/app-layouts.md`.
+4. **Build with Quanta** — adapt the layout and its existing components; use Quanta primitives for missing components. Keep real copy and the user's requested functionality.
+5. **Wire fnf** — auth per `references/auth.md`, generation/media per `references/fnf-sdk.md` and `references/fnf-react.md`, and product state in D1. Respect the user and workspace security boundaries below.
+6. **Verify** — run actual project typecheck, build, and tests as applicable; inspect the interface and changed behavior. Do not perform paid generation merely to validate a config install.
+7. **Prepare launch assets** — for a requested listing, fill `app/src/app-meta.json` with truthful title/description, favicon, OG cover, and marketplace cover. Reuse suitable supplied assets or generate missing ones only within the authorized credit budget; `references/app-cover.md` describes the platform format. Cover video is optional.
+8. **Deploy** — `higgsfield website deploy <website_id>` only when deployment is authorized. This immediately updates the live public site. Verify status and report its actual live URL; otherwise deliver the local build for review.
+9. **Publish** — `higgsfield website publish <website_id>` only when a community-feed listing was requested or already authorized. Contest submission is a separate explicit request; verify current terms in `references/contest.md` before acting.
+
+---
+
+## Functional routing
+
+| Task | Read |
+|---|---|
+| **START HERE** — the working critical path: auth, generation submit/poll, result rendering, the common Quanta components | **`references/app-quickstart.md`** |
+| fnf SDK: generation jobs, media upload, profile/workspace/credits, adapters | `references/fnf-sdk.md` + `references/auth.md` + `references/runtime-and-infra.md` |
+| React query/cache/controllers for fnf | `references/fnf-react.md` + `references/auth.md` |
+| Higgsfield-SDK app UI (generation console, fnf-backed tool) | `references/app-layouts.md` + `references/quanta-design.md` + `references/fnf-sdk.md` + `references/fnf-react.md` + `references/auth.md` (component gaps: build from Quanta primitives) |
+| Cover / OG image ("cover", "обложка", "OG image", publish prep) | `references/app-cover.md` — branded 3:2 cover + capsule OG mask |
+| Cover video / "animate the cover" (`og_video_url`, permission-gated) | `references/cover-animator.md` — ~5s end-frame reveal via `seedance_2_0` |
+| App contest ("enter the contest", "$100k contest", `higgsfield website contest`) | `references/contest.md` — entry auto-publishes; submit with social links |
+| Auth, current user, login/logout, `/api/user`, `__auth` routes | `references/auth.md` + `references/runtime-and-infra.md` |
+| Protected/authenticated `/api/...` file downloads inside the Higgsfield iframe | `references/auth.md` — credentialed fetch → Blob download; signed URLs for large files |
+| TanStack Start routes, SSR, server functions, Cloudflare Worker runtime | `references/runtime-and-infra.md` |
+| Heavy / long-running work (ffmpeg, headless browser, background jobs), containers | `references/containers.md` |
+
+Use the relevant platform references alongside applicable host and repository instructions.
+
+## Hard rules
+
+### 0a. Higgsfield packages and template modules
+
+The `app/packages/` directory contains managed snapshots vendored from the
+upstream Higgsfield web app: `@higgsfield/fnf`, `@higgsfield/fnf-react`, and
+`@higgsfield/quanta`. Do not edit these manually unless the task explicitly
+asks to patch a package snapshot. Template-owned infrastructure lives in
+`app/src/module/**`.
+
+### 0b. Supercomputer Design mode inspector
+
+Generated apps support a Higgsfield design inspector bridge for editing in
+Supercomputer Design mode. The split is strict:
+
+- The Higgsfield editor (parent window) owns the iframe UI, hover overlay,
+  edit popover, origin/session checks, and edit prompt submission.
+- This template owns the child iframe runtime through
+  `app/src/module/design-inspector`.
+- Agents never manually implement inspector code, refs, source markers, or
+  `data-hf-*` attributes.
+
+Local scripts: `bun run build` (inspector-free by default; set
+`HF_DESIGN_INSPECTOR=1` in the env for the inspector-enabled build) and
+`bun run dev:design` — for LOCAL work only. The platform CI sets
+`HF_DESIGN_INSPECTOR=1` on every deploy build, so the live deployed site always
+carries the inspector and IS the surface Supercomputer Design mode opens. The
+deployment target is live: an authorized `higgsfield website deploy <website_id>`
+updates the public site immediately; never hard-code `HF_DESIGN_INSPECTOR=1` into the
+`build` script or hand-edit the build scripts to toggle the inspector.
+
+### 1. SSR-safe rendering
+Every route renders on the server per request. NEVER touch browser-only
+globals (`window`, `document`, `localStorage`, `navigator`) at module top
+level or during render — only inside `useEffect`/event handlers, or guarded
+with `typeof window !== "undefined"`. A top-level `window` reference crashes
+SSR.
+
+### 2. Server-only code stays server-only
+Put server logic in `createServerFn(...).handler(...)` or a `*.server.ts`
+module (the `.server.ts` suffix keeps it out of the client bundle). Secrets
+and bindings are read **server-side, per request** — never shipped to the
+browser.
+
+### 3. Higgsfield (fnf) calls are BACKEND-ONLY — and auth is MANDATORY
+
+Call Higgsfield internal services exclusively from server code at
+`https://fnf.internal/*` (the platform attaches the user's identity on server
+egress, so tokens never live in app code). NEVER call `https://fnf.internal/*`
+from client components.
+
+Every app is an authenticated surface. Before shipping you MUST implement the
+Higgsfield auth contract exactly as written in `references/auth.md`: the
+`GET /api/user` server proxy (returns the upstream status and JSON unchanged),
+a signed-out state that links to `/__auth/login?return=<path>`,
+`/__auth/logout?return=<path>`, and a server-side auth re-check before every
+SDK operation. Do not invent your own login UI, email/password form, or token
+handling, and do not build anonymous generation flows unless the user
+EXPLICITLY asks for an offline/mock demo.
+
+**Sign-in on the deployed site is platform-owned — do NOT improvise a cause if
+it fails.** `/__auth/login` is a platform-injected route that hands off to
+Higgsfield's auth service, then redirects back to `return` so `/api/user`
+succeeds. If a user reports sign-in failing on a DEPLOYED SITE, FIRST confirm
+the app side is correct (links to `/__auth/login?return=<path>`, proxies
+`/api/user` unchanged); if it is, the failure is on the platform/auth side —
+say so plainly instead of inventing an app-code cause.
+
+If the app also needs its own user accounts (e.g. team members of the app's
+customers), keep that separate — never replace Higgsfield auth with app-local
+auth for generation.
+
+Treat auth, profile, credits/workspace display, and a generation feed/history
+as mandatory acceptance criteria for any generation app — do not wait for the
+user to ask.
+
+Generation history cards must render SDK `Generation.results`, not status-only
+placeholders. Compose result cards from Quanta `Media`/`Card` using the
+helpers in `app/src/lib/higgsfield-generation-results.ts` (they map a
+Generation to its preview URL with the right precedence). A completed job
+without a result URL must show an explicit "preview unavailable" state with
+refresh behavior.
+
+When creating SDK clients, use only
+`createWorkflowPlatformAdapter({ baseUrl: 'https://fnf.internal' })` — imported
+from `@higgsfield/fnf/workflow-platform` (NOT `@higgsfield/fnf/adapters`; that
+subpath no longer exists) — from server-side code. Do not use public/dev fnf
+URLs, env-selected backend URLs, `createFnfWebAdapter`,
+`createDevFnfWebAdapter`, apps-marketplace adapters, bearer tokens, or dev
+user headers in generated app code.
+
+Generation submits require the SDK's confirmation gate: a browser confirmation
+modal (model + settings + cost preview) before the generate call, and the
+adapter's `confirm` option wired server-side. A declined confirmation is the
+typed `confirmation_rejected` error — render it as a cancelled state. See
+`references/fnf-sdk.md`, "Submission Confirmation Gate".
+
+### 3a. An app is end-to-end — real backend + real DB, never a mock
+
+An app MUST ship as a real, end-to-end product — NOT a front-end mock,
+prototype, or "demo" that fakes the backend. All three are required:
+
+- **A real backend.** Every data operation runs through a TanStack **server
+  function** or **server route** — fnf calls server-side, reads/writes
+  server-side.
+- **Real persistence (D1).** Opt into D1 (`"db": true` in
+  `app/app.manifest.json`) and persist the app's OWN product state:
+  saved/favorited generations, collections, presets, share records, settings.
+  Schema in `app/migrations/000N_*.sql` (additive; rule 5).
+- **Real fnf integration.** Generations, media, profile, and credits come from
+  the live SDK against `https://fnf.internal`, never hardcoded fixtures.
+
+fnf is the source of truth for the generations themselves — do NOT mirror
+fnf's tables into D1. D1 is for YOUR product layer on top.
+
+**These are NOT a backend and are bugs:** in-memory arrays or module-level
+state as "the database"; `localStorage` as the persistence layer;
+hardcoded/fixture/`lorem` data; a static JSON file faking a list endpoint;
+`setTimeout` faking latency; memory/mock SDK adapters shipped as the product.
+The ONLY exception is when the user **explicitly** asks for an offline/mock
+demo — then say plainly that it is a mock and why.
+
+### 4. Cloudflare bindings via `cloudflare:workers`
+Any infra you opt into (D1 `DB`, R2 `STORAGE`, KV `KV`) is read server-side
+through `app/src/lib/bindings.server.ts`
+(`import { env } from "cloudflare:workers"`). Each binding is present ONLY if
+declared in `app/app.manifest.json`, so the typed accessors are optional —
+guard before use. Do not thread `env` through React props or read it at
+module top level.
+
+### 5. Opted-in storage is LIVE — one deploy, one database
+If you opt into D1, R2, or KV, each is a SINGLE instance backing the ONE live
+deploy. There is no staging copy: every migration and data change hits **live
+production data** directly. `env.HF_ENV` is always `"production"` on deployed
+builds; there is no separate database/bucket to test against. A destructive
+migration you run "just to test" destroys **production data**. Prefer additive
+migrations (`CREATE TABLE IF NOT EXISTS`, `ADD COLUMN`), and get explicit user
+approval before any destructive change.
+
+### 6. `app/app.manifest.json` declares infra — NOTHING is provisioned by default
+A new app gets **no D1, no R2, no KV, no Durable Object**. Opt in only when
+the app actually needs it: `"db": true` → D1 (`env.DB`); `"r2": true` → R2
+(`env.STORAGE`); `"kv": true` → KV (`env.KV`); `"durableObject": "ClassName"`
+→ a Durable Object (`env.ROOMS`, ALSO `export class ClassName extends
+DurableObject {…}` from `app/src/server.ts`); `"container": true` → a Docker
+container for heavy/long-running work (`env.CONTAINER` —
+`references/containers.md`). Counts are capped (≤1 each); the platform
+provisions and binds at deploy; the committed `app/wrangler.jsonc` is
+build/dev input only. **KV is eventually consistent** (NOT Redis) — use a
+Durable Object for strong consistency.
+
+## Editing map
+- Pages / routing → `app/src/routes/**` (file-based; `__root.tsx` is the shell).
+- Server logic → `createServerFn` (see `app/src/lib/api/example.functions.ts`)
+  or `*.server.ts`.
+- Bindings access → `app/src/lib/bindings.server.ts`.
+- Infra declaration → `app/app.manifest.json`; `app/wrangler.jsonc` = build/dev
+  input.
+- Components → Quanta components first (`@higgsfield/quanta/*` — Button,
+  Input, Textarea, Dropdown, Modal, Tabs, Sidebar, Chip, …), app-local
+  composition in `app/src/components/**`; layout per
+  `references/app-layouts.md`; gaps → your own component from Quanta primitives.
+- Generation result UI → compose from Quanta `Media`/`Card` +
+  `app/src/lib/higgsfield-generation-results.ts`.
+- Styles / theme → `app/src/styles.css` (Tailwind v4 + Quanta wiring).
+  Quanta's `q-` tokens ARE the theme; the app is permanently dark.
+- D1 schema → `app/migrations/000N_*.sql` (additive; see rule 5).
+
+## Deploy
+
+The trusted platform CI builds the app on **every deploy** (always with
+`HF_DESIGN_INSPECTOR=1` and `HF_ENV="production"` — the live site carries the
+design inspector), so a deploy already gives you the authoritative build
+result. The sandbox cannot deploy/migrate; the trusted platform CI does that.
+
+**Deploy only when authorized** — `higgsfield website deploy <website_id>` builds
+via CI and ships the live site immediately. Run the applicable local checks
+below and push the intended changes before an authorized deployment. Otherwise
+deliver the verified local build for review. Never publish/list on the community
+feed unless the user explicitly asked to publish.
+
+**Publishing ("show in feed").** When listing is requested or already authorized,
+run `higgsfield website publish <website_id>` for the ready live app; no new
+deployment is needed. Publishing lists what is already live and does not ship
+pending changes. If preparation requires a new or updated live build, deploy
+only within existing deployment authorization. A listing request alone does not
+authorize changing the live site. Ask only for a needed action that is not yet
+authorized; do not repeat approvals already granted.
+
+**HARD GATE — the cover is NOT optional. Running `higgsfield website publish` while
+`og_image_url` or `marketplace_cover_url` is empty is a BROKEN publish** (the
+feed card renders ONLY from `app/src/app-meta.json`; an empty `og_title` makes
+the listing INVISIBLE, an empty cover makes it a blank card). Inspect
+`app/src/app-meta.json` from the deployed revision; pending local edits are not
+evidence that the live metadata is ready. If the live build already has the
+required values below, publish it without a commit, push, or deploy. Otherwise,
+prepare the missing metadata/assets within scope using `references/app-cover.md`
+and suitable existing assets or authorized generation. Validate the changes,
+then commit, push, and deploy only within existing authorization for those
+actions. If deployment is not authorized, present the prepared changes and ask
+only for that missing authorization. Verify the resulting live build before
+publishing; do not include unrelated pending changes.
+
+Metadata fields:
+
+1. `og_title` — the card's title (also the browser tab title).
+2. `og_description` — the card's one-liner.
+3. `og_image_url` — REQUIRED: the cover image, generated per
+   `references/app-cover.md` (the branded 3:2 cover + stadium-capsule OG
+   mask) if none exists yet; upload the OG file with `higgsfield upload create`
+   and set the returned durable URL.
+4. `marketplace_cover_url` — REQUIRED: the plain (unmasked) cover, the same
+   generation's `<name>_cover.png` from `references/app-cover.md`, uploaded
+   with `higgsfield upload create`. One generation fills both this and
+   `og_image_url` — there is never a reason to have one without the other.
+5. `favicon_url` — the card's logo/icon (generate one if none exists yet).
+6. `og_video_url` — optional cover video. Generate only if requested or already authorized; see `references/cover-animator.md` and verify the current model contract.
+
+Reuse suitable existing assets for fields 1–5; generate/upload missing assets only within the authorized publish workflow and credit budget. Cover video is optional and needs a request that includes it.
+
+`higgsfield website deploy <website_id>` remains the way to ship the live site
+WITHOUT a feed listing.
+
+**Entering the app contest.** If the user asks to enter the app in the
+Higgsfield contest ("enter the contest", "submit to the $100k contest"), run
+`higgsfield website contest <website_id> --url <link>` — an unpublished app is
+published automatically by the entry. Verify the existing live build and its
+metadata are ready; any required deployment follows the separate authorization
+rule above. There is no separate publish step. The submission needs one or more public
+social-media links (Instagram / TikTok / YouTube / X) with the app link and
+`#HiggsfieldApp` — the user posts those themselves, so ask for the URL(s). Full
+rules, prizes, and how the contest shapes the build are in
+`references/contest.md`.
+
+**Run the applicable local checks before claiming the build is ready** — from `app/`:
+```bash
+cd app
+bun install          # only when you changed dependencies / package.json
+bun run typecheck    # tsc --noEmit when available
+bun run build        # validate the production build
+```
+
+**Adding a dependency: `bun add`.**
+
+**Small edits to an existing app** (copy tweak, one component, styling fix):
+make the edit, verify it, and deploy when authorized.
