@@ -76,9 +76,9 @@ callback refs and a `WeakMap`, not DOM attributes. Keep the guarded
 dynamic install in `app/src/routes/__root.tsx` and the Vite integration in
 `app/vite.config.ts` wired to `app/src/module/design-inspector/vite`.
 
-For every Supercomputer website-builder task there is ONE deploy —
-`higgsfield website deploy <website_id>` — and it ships the live public site
-immediately; there is no preview stage or environment choice. Publishing/listing on
+The platform has one live deployment target. An authorized
+`higgsfield website deploy <website_id>` updates the public site immediately;
+there is no preview stage or environment choice. Publishing/listing on
 the community feed is separate: do NOT run `higgsfield website publish` unless
 the user explicitly asks to publish, list, or share the site. Never hard-code
 `HF_DESIGN_INSPECTOR=1` into the `build` script and never hand-edit the build
@@ -182,25 +182,29 @@ checks, push the intended changes, then run `higgsfield website deploy
 immediately. Otherwise deliver the verified local build for review. Never
 publish/list on the community feed unless the user explicitly asked to publish.
 
-**Publishing ("show in feed").** When the user asks to publish / share / put the
-site on the feed, run `higgsfield website publish <website_id>` — it lists the
-site on the Higgsfield community feed. **Publishing no longer deploys**: it
-lists whatever is already live, so run `higgsfield website deploy <website_id>`
-FIRST — and after ANY later change, deploy again to ship it (re-publishing does
-not re-deploy and won't pick up un-deployed changes).
+**Publishing ("show in feed").** When listing is requested or already authorized,
+run `higgsfield website publish <website_id>` for the ready live site; no new
+deployment is needed. Publishing lists what is already live and does not ship
+pending changes. If preparation requires a new or updated live build, deploy
+only within existing deployment authorization. A listing request alone does not
+authorize changing the live site. Ask only for a needed action that is not yet
+authorized; do not repeat approvals already granted.
 
 **HARD GATE — the cover is NOT optional. Running `higgsfield website publish` while
 `og_image_url` or `marketplace_cover_url` is empty is a BROKEN publish** (the
 feed card renders ONLY from `app/src/app-meta.json`; an empty `og_title` makes
-the listing INVISIBLE, an empty cover makes it a blank card). The publish
-sequence is: (a) READ `app/src/app-meta.json`; (b) if `og_image_url` or
-`marketplace_cover_url` is empty → STOP, read `references/app-cover.md` and
-generate + upload the cover NOW — do not skip this because the user "only asked
-to publish", the cover IS part of publishing; (c) fill ALL fields below with
-real values (never placeholders); (d) commit + push; (e) run
-`higgsfield website deploy <website_id>` to ship the pushed changes (publish no
-longer deploys — it lists what's already live); (f) only then run
-`higgsfield website publish`:
+the listing INVISIBLE, an empty cover makes it a blank card). Inspect
+`app/src/app-meta.json` from the deployed revision; pending local edits are not
+evidence that the live metadata is ready. If the live build already has the
+required values below, publish it without a commit, push, or deploy. Otherwise,
+prepare the missing metadata/assets within scope using `references/app-cover.md`
+and suitable existing assets or authorized generation. Validate the changes,
+then commit, push, and deploy only within existing authorization for those
+actions. If deployment is not authorized, present the prepared changes and ask
+only for that missing authorization. Verify the resulting live build before
+publishing; do not include unrelated pending changes.
+
+Metadata fields:
 
 1. `og_title` — the card's title (also the browser tab title).
 2. `og_description` — the card's one-liner.

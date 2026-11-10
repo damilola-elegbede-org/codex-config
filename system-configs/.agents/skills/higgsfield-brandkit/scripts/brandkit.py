@@ -12,21 +12,17 @@ from __future__ import annotations
 import argparse
 import hashlib
 import html
-import ipaddress
 import json
 import os
 from pathlib import Path
 import re
 import shutil
-import socket
-import ssl
 import subprocess
 import tempfile
 from typing import Any
 import unicodedata
-from urllib.error import HTTPError
-from urllib.parse import urljoin, urlparse
-from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
+
+from public_https import fetch_public_https
 
 
 MAX_SVG_BYTES = 256 * 1024
@@ -56,27 +52,6 @@ STYLE_PAINT_RE = re.compile(
     rf"""((?:^|[;{{"']\s*)(?:fill|stroke|stop-color|flood-color|lighting-color|color)\s*:\s*)({COLOR_TOKEN})""",
     re.IGNORECASE,
 )
-class NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
-
-
-def tls_context() -> ssl.SSLContext:
-    """Use OpenSSL defaults, then common OS CA bundles when Python lacks one."""
-    context = ssl.create_default_context()
-    if ssl.get_default_verify_paths().cafile:
-        return context
-    for candidate in (
-        Path("/etc/ssl/cert.pem"),
-        Path("/etc/ssl/certs/ca-certificates.crt"),
-        Path("/etc/pki/tls/certs/ca-bundle.crt"),
-    ):
-        if candidate.is_file():
-            context.load_verify_locations(cafile=str(candidate))
-            break
-    return context
-
-
 def compact(value: Any) -> str:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
@@ -580,50 +555,15 @@ def run_state(args: argparse.Namespace) -> dict[str, Any]:
     return {**result, "state_snapshot": state}
 
 
-def assert_public_host(hostname: str) -> None:
-    try:
-        answers = socket.getaddrinfo(hostname, None)
-    except socket.gaierror as error:
-        raise RuntimeError(f"cannot resolve SVG host '{hostname}'") from error
-    addresses = {answer[4][0] for answer in answers}
-    if not addresses:
-        raise RuntimeError(f"cannot resolve SVG host '{hostname}'")
-    for address in addresses:
-        ip = ipaddress.ip_address(address.split("%", 1)[0])
-        if not ip.is_global:
-            raise RuntimeError(f"SVG host resolves to a non-public address: {address}")
-
-
 def safe_fetch_svg(url: str) -> str:
-    opener = build_opener(NoRedirect, HTTPSHandler(context=tls_context()))
-    current = url
-    for _ in range(MAX_REDIRECTS + 1):
-        parsed = urlparse(current)
-        if parsed.scheme != "https" or not parsed.hostname or parsed.username:
-            raise RuntimeError("SVG URL must use https with a public host")
-        assert_public_host(parsed.hostname)
-        request = Request(
-            current,
-            headers={"Accept": "image/svg+xml", "User-Agent": "higgsfield-brandkit/1"},
-        )
-        try:
-            response = opener.open(request, timeout=20)
-        except HTTPError as error:
-            if error.code in {301, 302, 303, 307, 308}:
-                location = error.headers.get("Location")
-                if not location:
-                    raise RuntimeError("SVG redirect is missing Location") from error
-                current = urljoin(current, location)
-                continue
-            raise RuntimeError(f"SVG download failed with HTTP {error.code}") from error
-        content_type = response.headers.get_content_type()
-        data = response.read(MAX_SVG_BYTES + 1)
-        if len(data) > MAX_SVG_BYTES:
-            raise RuntimeError(f"SVG exceeds {MAX_SVG_BYTES} bytes")
-        if content_type not in {"image/svg+xml", "text/plain", "application/octet-stream"}:
-            raise RuntimeError(f"SVG URL returned unsupported content type '{content_type}'")
-        return data.decode("utf-8")
-    raise RuntimeError("SVG URL redirected too many times")
+    """Download bounded SVG text through DNS-pinned, certificate-verified HTTPS."""
+    data, content_type = fetch_public_https(
+        url, limit=MAX_SVG_BYTES, redirects=MAX_REDIRECTS,
+        timeout=20, accept="image/svg+xml",
+    )
+    if content_type not in {"image/svg+xml", "text/plain", "application/octet-stream"}:
+        raise RuntimeError(f"SVG URL returned unsupported content type '{content_type}'")
+    return data.decode("utf-8")
 
 
 def read_svg(source: str) -> str:
@@ -805,6 +745,7 @@ def recolor_svg(
 
 
 def require_inline_paints(svg: str) -> None:
+    """Reject recoloring sources whose styling or definitions affect rendering."""
     if re.search(r"<style\b", svg, re.IGNORECASE):
         raise RuntimeError(
             "SVG stylesheets are unsupported for recoloring; provide an SVG "
@@ -1027,6 +968,7 @@ def full_canvas_path(
 
 
 def strip_full_canvas_background(svg: str) -> tuple[str, bool]:
+    """Trim only an unambiguous first rectangular background; preserve other SVGs."""
     _, body, viewbox = validate_svg(svg)
     # Geometry inside definition containers may control masks, clipping, or
     # reusable artwork. Preserve it rather than guessing its rendering role.
@@ -1317,6 +1259,7 @@ def logo_markup(source: str | None) -> str:
 
 
 def build_review_html(review: dict[str, Any]) -> str:
+    """Render an editable review with the selected assets and supported font traits."""
     stage = str(review.get("stage", ""))
     if stage not in {"palette", "typography", "essential"}:
         raise RuntimeError("review.stage must be palette, typography, or essential")

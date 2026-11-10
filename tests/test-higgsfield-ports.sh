@@ -22,12 +22,14 @@ root = Path(os.environ["HIGGSFIELD_TEST_ROOT"])
 skills = root / "system-configs/.agents/skills"
 bundles = sorted(skills.glob("higgsfield-*"))
 assert len(bundles) == 8
+helper_count = 0
 for bundle in bundles:
     license_text = (bundle / "LICENSE.txt").read_text()
     assert "Copyright (c) 2026 Higgsfield AI" in license_text
     assert "THE SOFTWARE IS PROVIDED \"AS IS\"" in license_text
     for helper in bundle.rglob("*.py"):
         ast.parse(helper.read_text(), filename=str(helper))
+        helper_count += 1
 
 brandkit = skills / "higgsfield-brandkit/scripts/brandkit.py"
 inspector = skills / "higgsfield-websites/scripts/glb_inspect.py"
@@ -43,6 +45,7 @@ for version in ((4, 1, 0), (5, 0, 0), (6, 0, 0)):
         else:
             raise AssertionError(f"Unsupported Blender {version} was accepted")
 sys.dont_write_bytecode = True
+sys.path.insert(0, str(brandkit.parent))
 spec = importlib.util.spec_from_file_location("brandkit_helpers", brandkit)
 helper = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(helper)
@@ -261,5 +264,6 @@ with tempfile.TemporaryDirectory(prefix="higgsfield-local-", dir=root / ".tmp") 
     assert broken.returncode == 2, broken.stdout
     assert "Meshy baked-scale bug" in broken.stdout
 
-print("Higgsfield ports: 8 bundles and 14 Python helpers checked; local state, SVG, font CSS, and GLB behavior passed.")
+print(f"Higgsfield ports: {len(bundles)} bundles and {helper_count} Python helpers checked; local state, SVG, font CSS, and GLB behavior passed.")
 PY
+python3 "$ROOT/tests/higgsfield-network.py"

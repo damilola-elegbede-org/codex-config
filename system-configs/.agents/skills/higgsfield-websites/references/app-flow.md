@@ -119,9 +119,9 @@ Local scripts: `bun run build` (inspector-free by default; set
 `HF_DESIGN_INSPECTOR=1` in the env for the inspector-enabled build) and
 `bun run dev:design` — for LOCAL work only. The platform CI sets
 `HF_DESIGN_INSPECTOR=1` on every deploy build, so the live deployed site always
-carries the inspector and IS the surface Supercomputer Design mode opens. There
-is ONE deploy (`higgsfield website deploy <website_id>`) and it ships the live
-public site immediately; never hard-code `HF_DESIGN_INSPECTOR=1` into the
+carries the inspector and IS the surface Supercomputer Design mode opens. The
+deployment target is live: an authorized `higgsfield website deploy <website_id>`
+updates the public site immediately; never hard-code `HF_DESIGN_INSPECTOR=1` into the
 `build` script or hand-edit the build scripts to toggle the inspector.
 
 ### 1. SSR-safe rendering
@@ -274,26 +274,29 @@ below and push the intended changes before an authorized deployment. Otherwise
 deliver the verified local build for review. Never publish/list on the community
 feed unless the user explicitly asked to publish.
 
-**Publishing ("show in feed").** When the user asks to publish / share / put
-the app on the feed, run `higgsfield website publish <website_id>` — it lists
-the app on the Higgsfield community feed. **Publishing no longer deploys**: it
-lists whatever is already live, so run `higgsfield website deploy <website_id>`
-FIRST — and after ANY later change, deploy again to ship it (re-publishing does
-not re-deploy and won't pick up un-deployed changes). Never list the app on the
-community feed unless the user explicitly asked to publish.
+**Publishing ("show in feed").** When listing is requested or already authorized,
+run `higgsfield website publish <website_id>` for the ready live app; no new
+deployment is needed. Publishing lists what is already live and does not ship
+pending changes. If preparation requires a new or updated live build, deploy
+only within existing deployment authorization. A listing request alone does not
+authorize changing the live site. Ask only for a needed action that is not yet
+authorized; do not repeat approvals already granted.
 
 **HARD GATE — the cover is NOT optional. Running `higgsfield website publish` while
 `og_image_url` or `marketplace_cover_url` is empty is a BROKEN publish** (the
 feed card renders ONLY from `app/src/app-meta.json`; an empty `og_title` makes
-the listing INVISIBLE, an empty cover makes it a blank card). The publish
-sequence is: (a) READ `app/src/app-meta.json`; (b) if `og_image_url` or
-`marketplace_cover_url` is empty → STOP, read `references/app-cover.md` and
-generate + upload the cover NOW — do not skip this because the user "only asked
-to publish", the cover IS part of publishing; (c) fill ALL fields below with
-real values (never placeholders); (d) commit + push; (e) run
-`higgsfield website deploy <website_id>` to ship the pushed changes (publish no
-longer deploys — it lists what's already live); (f) only then run
-`higgsfield website publish`:
+the listing INVISIBLE, an empty cover makes it a blank card). Inspect
+`app/src/app-meta.json` from the deployed revision; pending local edits are not
+evidence that the live metadata is ready. If the live build already has the
+required values below, publish it without a commit, push, or deploy. Otherwise,
+prepare the missing metadata/assets within scope using `references/app-cover.md`
+and suitable existing assets or authorized generation. Validate the changes,
+then commit, push, and deploy only within existing authorization for those
+actions. If deployment is not authorized, present the prepared changes and ask
+only for that missing authorization. Verify the resulting live build before
+publishing; do not include unrelated pending changes.
+
+Metadata fields:
 
 1. `og_title` — the card's title (also the browser tab title).
 2. `og_description` — the card's one-liner.
@@ -316,9 +319,9 @@ WITHOUT a feed listing.
 **Entering the app contest.** If the user asks to enter the app in the
 Higgsfield contest ("enter the contest", "submit to the $100k contest"), run
 `higgsfield website contest <website_id> --url <link>` — an unpublished app is
-published automatically by the entry (it just needs a live prod deploy, and
-fill the page metadata FIRST — the auto-published listing renders from it), so
-there's no separate publish step. The submission needs one or more public
+published automatically by the entry. Verify the existing live build and its
+metadata are ready; any required deployment follows the separate authorization
+rule above. There is no separate publish step. The submission needs one or more public
 social-media links (Instagram / TikTok / YouTube / X) with the app link and
 `#HiggsfieldApp` — the user posts those themselves, so ask for the URL(s). Full
 rules, prizes, and how the contest shapes the build are in

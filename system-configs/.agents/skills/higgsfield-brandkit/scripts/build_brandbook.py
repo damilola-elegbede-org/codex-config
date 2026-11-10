@@ -19,11 +19,11 @@ import struct
 import subprocess
 import tempfile
 from typing import Any, Callable
-from urllib.parse import quote, urljoin, urlparse
-from urllib.request import HTTPRedirectHandler, HTTPSHandler, Request, build_opener
+from urllib.parse import quote
 import zipfile
 
-from brandkit import assert_public_host, normalize_hex, read_state, slug, tls_context
+from brandkit import normalize_hex, read_state, slug
+from public_https import fetch_public_https
 
 
 TEMPLATE_URL = (
@@ -50,41 +50,10 @@ REQUIRED_SHAPES = (
 Archive = dict[str, bytes]
 
 
-class NoRedirect(HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        return None
-
-
 def fetch_bytes(url: str, limit: int, redirects: int = 2) -> bytes:
-    opener = build_opener(NoRedirect, HTTPSHandler(context=tls_context()))
-    current = url
-    for _ in range(redirects + 1):
-        parsed = urlparse(current)
-        if parsed.scheme != "https" or not parsed.hostname or parsed.username:
-            raise RuntimeError("Brandbook resources must use https with a public host")
-        assert_public_host(parsed.hostname)
-        try:
-            response = opener.open(
-                Request(current, headers={"User-Agent": "higgsfield-brandkit/1"}),
-                timeout=30,
-            )
-        except Exception as error:
-            code = getattr(error, "code", None)
-            headers = getattr(error, "headers", None)
-            if code in {301, 302, 303, 307, 308} and headers:
-                location = headers.get("Location")
-                if location:
-                    current = urljoin(current, location)
-                    continue
-            raise RuntimeError(f"failed to download Brandbook resource: {error}") from error
-        declared = int(response.headers.get("Content-Length", "0") or "0")
-        if declared > limit:
-            raise RuntimeError(f"Brandbook resource exceeds {limit} bytes")
-        data = response.read(limit + 1)
-        if len(data) > limit:
-            raise RuntimeError(f"Brandbook resource exceeds {limit} bytes")
-        return data
-    raise RuntimeError("too many Brandbook resource redirects")
+    """Fetch a bounded public resource with pinned addresses on every HTTPS hop."""
+    data, _ = fetch_public_https(url, limit=limit, redirects=redirects, timeout=30)
+    return data
 
 
 def read_archive(data: bytes) -> Archive:

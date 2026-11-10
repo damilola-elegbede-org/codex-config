@@ -95,6 +95,7 @@ def fix_root_scale(act, root):
 
 
 def main():
+    """Merge clips and repair root scale using a supported Blender legacy API."""
     if not (4, 2, 0) <= bpy.app.version < (5, 0, 0):
         raise SystemExit(
             "merge_anim_glbs.py requires Blender 4.2 through 4.x; "
