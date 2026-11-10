@@ -5,7 +5,7 @@ Use this flow after the user selects Higgsfield and the `website` product type. 
 ## Build workflow
 
 1. Resolve only missing requirements: requested scope, supplied brand assets, animation direction, and any authorization needed for service creation, paid assets, or live deployment. Do not repeat answers already given or infer authorization from silence.
-2. Record a concise design brief in `.tmp/plans/` (or the project's required durable location). Capture audience, concept, palette, typography, sections, requested interactions, and asset needs. Preserve explicit user branding and accessibility needs.
+2. Record a concise design brief in `.tmp/plans/design-brief.md` (or the project's required durable location); use its actual path as `DESIGN_BRIEF` in later checks. Capture audience, concept, palette, typography, sections, requested interactions, and asset needs. Include one `Animation mode:` line: `animated-website` for an agreed scroll-scrub film, or `non-animated` for other treatments, with the reason grounded in the request. Missing direction never authorizes a film or extra paid assets. Preserve explicit user branding and accessibility needs.
 3. Read [design-recipe](design-recipe.md) for craft guidance, then [reference-boards](reference-boards.md) when boards would help settle a substantial design. Use [scroll-scrub](scroll-scrub.md) only for an agreed animated film journey; use [wow-catalog](wow-catalog.md) for other requested effects. Artistic defaults are subordinate to the brief and budget.
 4. Plan only assets needed by the requested output with [asset-system](asset-system.md). Preserve supplied assets; generate missing ones only within authorized Higgsfield usage. Inspect outputs before implementation. Optional visual kits, films, 3D assets, and cover videos are not automatic scope expansion.
 5. Implement real requested behavior using [image-to-code](image-to-code.md), the scaffold, and the platform contracts below. Keep content visible without animation, provide reduced-motion fallbacks, and guard browser-only APIs from SSR. Use `.tmp/` for temporary planning/review artifacts.
@@ -164,22 +164,23 @@ pattern, fnf via container token). Containers are **off by default**.
   token layer from the design brief — no q-prefixed utilities, no site-wide
   CTA utility classes.
 - D1 schema → `app/migrations/000N_*.sql` (additive; see rule 5).
-- Pipeline artifacts → `app/design-brief.md` (Phase 0) + `refs/*.png` (Phase 1);
-  commit both.
+- Pipeline artifacts → the actual design-brief path from build step 2 and
+  temporary reference boards under `.tmp/`. Commit only artifacts the project
+  requires as durable deliverables.
 
 ## Verify + deploy
 
 The trusted platform CI builds the website on **every deploy** (always with
 `HF_DESIGN_INSPECTOR=1` and `HF_ENV="production"` — the live site carries the
-design inspector), so a deploy already gives you the authoritative type +
-build result. Do NOT reflexively `bun install` +
-`bun run build` just to check your work. The sandbox cannot deploy/migrate (no
+design inspector). Run the applicable local checks before claiming readiness;
+CI also verifies the deployed build. The sandbox cannot deploy/migrate (no
 Cloudflare token); the trusted platform CI does that.
 
-**Default: run the pipeline, pass the Phase 5 gate, deploy**
-(`higgsfield website deploy <website_id>` — this ships the live site
-immediately). Never publish/list on the community feed unless the user
-explicitly asked to publish.
+**Deploy only when authorized.** Pass the applicable review rubric and project
+checks, push the intended changes, then run `higgsfield website deploy
+<website_id>` within existing deployment authorization; this ships the live site
+immediately. Otherwise deliver the verified local build for review. Never
+publish/list on the community feed unless the user explicitly asked to publish.
 
 **Publishing ("show in feed").** When the user asks to publish / share / put the
 site on the feed, run `higgsfield website publish <website_id>` — it lists the

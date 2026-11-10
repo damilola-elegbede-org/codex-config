@@ -1,6 +1,6 @@
 # Local Brandkit state routing
 
-Store approval state in the active project's `brandkit/state.json`. Drafts never enter it. The bundled script writes atomically and tracks independent logo, palette, typography, visual-axis, and downstream-element revisions.
+Store approval state in `$BRANDKIT_STATE`, as established by `SKILL.md` (default `${PWD}/.tmp/brandkit/state.json`, or the durable project path the user requests). Drafts never enter it. The bundled script writes atomically and tracks independent logo, palette, typography, visual-axis, and downstream-element revisions.
 
 Use the path variables established by `SKILL.md`:
 
@@ -14,11 +14,11 @@ Create payload files as JSON under `"$BRANDKIT_WORKDIR"`. Never interpolate user
 
 ## Persistence
 
-- The local state file survives turns and agent restarts. Do not export it into chat or paste it into prompts.
+- The local state file survives turns and agent restarts while retained. The default `.tmp/` location is scratch storage, not an archival guarantee. Do not export state into chat or paste it into prompts.
 - Read state only through the script. Do not hand-edit revisions, origins, dependencies, or approvals.
 - Store durable references: absolute local paths, confirmed URLs, upload IDs, or completed job IDs.
 - If the state file is missing but the conversation claims prior approvals, stop and ask whether to restart or locate the previous project directory. Never infer approvals.
-- Do not commit `brandkit/state.json` unless the user explicitly wants brand state versioned with the project.
+- Do not commit the file at `$BRANDKIT_STATE` unless the user explicitly wants brand state versioned with the project.
 
 ## Call moments
 

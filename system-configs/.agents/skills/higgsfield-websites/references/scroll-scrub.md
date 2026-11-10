@@ -1,17 +1,17 @@
 # scroll-scrub — the animated website (`--type website` only)
 
-This is the **animated website** — the DEFAULT Tier-1 experience for every
-`--type website` build. The visitor's scroll plays a generated film while the
+Use this reference for an agreed **animated website** with `--type website`.
+The visitor's scroll plays a generated film while the
 page's semantic chapters read over it. By default that is ONE continuous film
 (`single-shot`); a multi-scene seam-locked chain is opt-in. Follow this
-reference for every website unless the user EXPLICITLY asked for a different
-treatment (in which case pick a technique from `references/wow-catalog.md`
-instead). It is also the reference for any brief that asks for a scrollable
+reference when the brief selects this treatment; it is not the default for other
+websites. It also fits a brief that asks for a scrollable
 world, continuous camera journey, diorama fly-through, or browse-through-the-
 industry site. In catalog terms this is **A4 — Seam-locked scroll scrub**.
 
 This is a specialized website build, not a Higgsfield app. Generate the scene
-media with Higgsfield during the build, download it into the site, and ship a
+media with Higgsfield within the authorized scope and credit budget, download
+it into the site, and ship a
 standalone branded website that performs no runtime generation, uses no fnf
 SDK, and mentions no Higgsfield branding.
 
@@ -27,10 +27,10 @@ the design brief.
 
 ### Phase 0 — lock the journey
 
-This is the journey block that `Animation mode: animated-website` obligates (see
-`references/website-flow.md` Phase 0). The brief is INCOMPLETE — a hard stop —
-until these decisions are written into `app/design-brief.md`; the Phase 5 gate
-(item 9f) checks that the Journey shape and Journey are present. Write:
+For `Animation mode: animated-website`, write this journey block in the actual
+design brief from `website-flow.md` build step 2 (normally
+`.tmp/plans/design-brief.md`) before generating media. Review-rubric item 9f
+checks that Journey shape and Journey are present. Write:
 
 #### Journey shape — pick ONE (this is the big cost lever)
 
@@ -328,11 +328,17 @@ forward direction is still broken.
 
 ## A4 pre-delivery QA
 
-Complete all normal Phase 5 checks, then verify:
+Complete the applicable review-rubric and project checks, then verify:
 
-Verify by READING the code and the encoded assets. There is no browsing step:
-the sandbox browser cannot reach a local preview, and this flow does no
-post-deploy visual review.
+Start with static inspection of the code and encoded assets: confirm posters,
+SSR guards, cleanup paths, and measured desktop/mobile clip totals against the
+brief's byte budgets. These checks do not establish interactive behavior.
+
+Use an available browser against a reachable local preview for the interaction
+checks below. After an authorized deployment, also inspect the live result.
+If the browser, preview, or throttling controls are unavailable, record the
+specific checks as untested and report verification as incomplete; do not mark
+them passed from code inspection or deploy merely to obtain a test environment.
 
 - Every seam uses an actual rendered boundary frame; inspect just before and
   after the seam in both scroll directions.
@@ -350,6 +356,5 @@ post-deploy visual review.
   chapter headings remain in DOM/reading order.
 - React unmount/remount produces no duplicate listeners, live RAF loop, stale
   video node, or unreleased Blob URL.
-- The measured desktop/mobile clip totals stay inside the brief's byte budgets;
-  verify requests and decoder behavior under network throttling as well as CPU
+- Verify requests and decoder behavior under network throttling as well as CPU
   throttling.

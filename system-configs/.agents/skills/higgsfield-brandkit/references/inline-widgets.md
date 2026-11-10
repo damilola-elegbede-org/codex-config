@@ -11,8 +11,8 @@ Show every Brandkit review directly in chat when the client can render local ima
    ```bash
    npx --yes playwright@1.62.1 screenshot \
      --viewport-size=1200,900 --wait-for-timeout=2000 --full-page \
-     "file://$PWD/brandkit/reviews/<board>.html" \
-     "$PWD/brandkit/reviews/<board>.png"
+     "file://$BRANDKIT_WORKDIR/reviews/<board>.html" \
+     "$BRANDKIT_WORKDIR/reviews/<board>.png"
    ```
 
 2. Inspect the PNG. Verify the intended font loaded, nothing is clipped, and text/background contrast is readable.

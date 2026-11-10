@@ -461,11 +461,10 @@ export function applySecurityHeaders(response: Response): Response {
       "script-src 'self' 'unsafe-inline'; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data: https:; media-src 'self' https:; " +
+      "img-src 'self' data: https:; media-src 'self' blob: https:; " +
       "connect-src 'self' https:; " +
       "frame-ancestors 'self' https://*.higgsfield.app https://higgsfield.app " +
-      "https://*.higgsfield.ai https://fnf-dev.anwar-695.workers.dev " +
-      "https://feat-apps-marketplace-tools-fnf-dev.anwar-695.workers.dev; " +
+      "https://*.higgsfield.ai; " +
       "base-uri 'self'; form-action 'self'",
   );
   headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
@@ -483,6 +482,10 @@ export function applySecurityHeaders(response: Response): Response {
 
 Adjust CSP directives per website needs (e.g., add specific CDN origins), but keep
 `X-Content-Type-Options` and keep `frame-ancestors` as the editor allowlist.
+The `blob:` media source supports the scroll-scrub controller's Blob video URLs.
+Keep development and personal preview hosts out of production `frame-ancestors`;
+add a verified exact development origin only in a separate non-production policy.
+Confirm and narrow the production editor origins for the actual deployment.
 **Never set `X-Frame-Options`** — it has no cross-origin allowlist, so
 `DENY`/`SAMEORIGIN` would blank the Supercomputer Design-mode iframe,
 which loads the live website from a cross-origin `higgsfield.app` host. Framing is

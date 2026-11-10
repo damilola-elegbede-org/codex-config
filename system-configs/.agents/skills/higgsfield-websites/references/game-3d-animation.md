@@ -150,8 +150,11 @@ Meshy returns one GLB per animation. Two merge options:
   run.glb:Run idle.glb:Idle attack.glb:Attack out.glb` — stdlib-only, remaps
   clips by node NAME, applies the root-scale fix and OPAQUE patch
   automatically.
-- Blender path (when the scene needs other edits anyway):
+- Blender 4.2–4.x path (when the scene needs other edits anyway):
   `blender -b -P scripts/merge_anim_glbs.py -- rigged.glb idle.glb:Idle attack.glb:Attack out.glb`.
+  This fallback uses the legacy Action API, which [Blender 5.0 removed](https://developer.blender.org/docs/release_notes/5.0/python_api/#animation-rigging).
+  It refuses unsupported versions before changing the scene. Prefer the stdlib
+  merger above for Blender 5+; this port does not claim a verified 5.x fallback.
 
 **Scale pitfall (verified bug):** Meshy *library* animations (via
 `/animations`) can bake a scale factor into the root bone's scale channel
@@ -219,7 +222,7 @@ Check whether the available browser supports WebGL; do not assume a host-specifi
 - `scripts/glb_patch.py` — stdlib JSON-chunk patcher: force OPAQUE/doubleSided on any GLB.
 - `scripts/rig_transfer.py` — static GLB + rigged donor FBX → animated GLB (Step 4).
 - `scripts/glb_merge_anims.py` — stdlib merger of single-clip GLBs (Meshy outputs) + root-scale fix, no Blender (Step 5, verified live).
-- `scripts/merge_anim_glbs.py` — same merge via Blender CLI (when Blender is already in play).
+- `scripts/merge_anim_glbs.py` — same merge via Blender 4.2–4.x CLI (when Blender is already in play; 5+ is unsupported).
 - `scripts/proc_rig_dragon.py` — procedural skeleton from bbox analysis (non-humanoids).
 - `scripts/proc_weights.py` — distance-based skin weights (ARMATURE_AUTO is broken headless).
 - `scripts/proc_anim_dragon.py` — sine-based idle/fly clips baked to keyframes.

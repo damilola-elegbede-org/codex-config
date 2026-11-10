@@ -219,9 +219,10 @@ Every site with a public face must include:
 
 1. **robots.txt** — TanStack server route at `/robots.txt` returning
    `User-agent: * / Allow: / / Sitemap: <origin>/sitemap.xml`. Drop-in:
-   `app/src/routes/robots.txt.ts`.
+   `app/src/routes/robots[.]txt.ts` with `createFileRoute('/robots.txt')`.
 2. **sitemap.xml** — TanStack server route at `/sitemap.xml` enumerating all
-   public page routes. Drop-in: `app/src/routes/sitemap.xml.ts`.
+   public page routes. Drop-in: `app/src/routes/sitemap[.]xml.ts` with
+   `createFileRoute('/sitemap.xml')`.
 3. **Canonical URLs** — every page route's `head()` must include
    `links: [{ rel: 'canonical', href: '<absolute URL>' }]`.
 4. **Security headers** — apply `applySecurityHeaders()` to every response — see

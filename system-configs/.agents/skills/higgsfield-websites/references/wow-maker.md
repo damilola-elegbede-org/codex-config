@@ -5,34 +5,33 @@ pick and fill — you **compose** a distinctive, award-tier site from the direct
 below: bespoke AI-generated assets, signature animation patterns, motion/3D
 libraries, and copy-paste component/block registries.
 
-**The mandatory wow on a website is the ANIMATED WEBSITE.** On every
-`--type website` build the Tier-1 wow is fixed by the brief's `Animation mode`
-(`references/website-flow.md` Phase 0): the DEFAULT is the **animated website** —
-the seam-locked scroll-scrub camera journey in `references/scroll-scrub.md` — and
-that is what "ships a real wow moment" MEANS here. This file is the ingredient
-directory you build the SURROUNDING craft with (bespoke assets, section motion,
-component registries); it is NOT a menu of alternatives to the animated website.
-Use `design-recipe.md` for HOW to execute with taste; this file is WHAT to build
-the supporting layer with.
+**Match the animation direction recorded in the design brief.** Use the actual
+brief path from `website-flow.md` build step 2. `Animation mode: animated-website`
+means an agreed scroll-scrub camera journey from `scroll-scrub.md`; it is not a
+default for every website. `non-animated` covers other treatments, including
+static layouts or lighter effects. This directory supplies craft guidance
+within that scope. Use `design-recipe.md` for execution, preserve supplied
+assets, and generate extra assets only within the authorized credit budget.
 
 ## What counts as "done" (every site)
 
-Wow is part of DONE, not optional polish. The bar is the `Animation mode` the
-brief committed to — nothing lighter:
+Apply these craft checks where they fit the brief. The requested treatment and
+accessibility needs control completion:
 
-1. **The Tier-1 wow matches `Animation mode`.** Default `animated-website` → the
+1. **The Tier-1 wow matches `Animation mode`.** Agreed `animated-website` → the
    scroll-scrub camera journey is built (component + scene media), per
-   `references/scroll-scrub.md` and enforced by the Phase 5 gate item 9f. The
+   `references/scroll-scrub.md` and checked by review-rubric item 9f. The
    items below are the craft AROUND it, not a substitute: a ticker, hover motion,
    entrance transitions, animated numbers, a shader gradient, or any single §2
-   effect DO NOT satisfy the animated-website requirement. Only when the brief
-   records `Animation mode: non-animated` (the user picked Non-animated at intake)
-   does a §2 signature effect / lighter technique become the Tier-1 wow.
-2. **≥1 bespoke generated asset**, downloaded into `app/public/` and actually
-   referenced — never stock, picsum, an icon-font hero, or a CSS-only hero. (§1)
+   effect do not replace an agreed film. For `Animation mode: non-animated`,
+   implement the static or lighter treatment selected in the brief; no explicit
+   animation opt-out or paid film is required.
+2. **The brief's visual assets are present**, downloaded into `app/public/` and
+   actually referenced. Reuse supplied assets; generate missing bespoke assets
+   only within authorized scope. (§1)
 3. **Motivated entrance motion** (scroll reveals / spring transitions via
    `motion/react`, GSAP, or a registry reveal), `prefers-reduced-motion`-gated. Not a
-   dead static page.
+   requirement to animate a deliberately static page.
 4. **Reach into the component/block directory (§5) instead of hand-rolling** generic
    sections — Tailark for full marketing sections; Magic UI / Cult UI / SmoothUI /
    motion-primitives for effects. Hand-built-from-scratch is slower and more generic.
@@ -40,18 +39,15 @@ brief committed to — nothing lighter:
    `morphing-text`/`aurora-text`) and animated numbers (`@number-flow/react`) instead
    of static text.
 
-**Order of work — the camera journey FIRST.** On the animated-website default,
+**Order of work — the camera journey FIRST.** For an agreed animated website,
 decide the journey and generate the scene media BEFORE you build the page, so the
 scroll-scrub spine drives the design. Do not ship a generic static structure and
 plan to "add the animation later" — you won't, and the gate will fail it.
 
-**Restraint is NOT an escape hatch from the animated website.** "Clean",
-"minimal", "trustworthy", "Linear-like", "Notion-like" briefs are STILL
-`Animation mode: animated-website` — restraint means the journey is *calm and
-deliberate* (slower camera, quieter scenes), not absent. A minimal or serious
-brief does NOT make it `non-animated`; only the user's own Non-animated choice
-does. Never use "it's minimal" as cover to ship a plain page or downgrade
-the animated website to a soft effect.
+For an agreed animated website, restraint can mean a calm, deliberate journey
+with a slower camera and quieter scenes. Words such as "clean" or "minimal"
+alone neither request a film nor cancel one already agreed; follow the recorded
+scope and resolve only material ambiguity.
 
 ## Rules (short)
 
@@ -74,8 +70,8 @@ the animated website to a soft effect.
 
 A site with real, generated art looks dramatically cooler than one built from stock,
 icon-fonts, CSS gradients, or empty placeholders — and generating it is **our
-product's superpower**. Treat bespoke asset generation as a **default step on every
-build**, not an afterthought. A hero with a generated image / video / 3D subject is
+product's superpower**. Plan bespoke generation when the brief needs it and the
+user has authorized the assets and budget. A hero with a generated image / video / 3D subject is
 often the single biggest wow upgrade available.
 
 **Commands** (`higgsfield generate create <job_type> --prompt "…" [flags]`).

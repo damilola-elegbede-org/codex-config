@@ -268,11 +268,11 @@ The trusted platform CI builds the app on **every deploy** (always with
 design inspector), so a deploy already gives you the authoritative build
 result. The sandbox cannot deploy/migrate; the trusted platform CI does that.
 
-**Default: deploy** — `higgsfield website deploy <website_id>` builds via CI and
-ships the live site immediately. You don't have to lint, build, or typecheck
-locally unless you think it's necessary (e.g. to debug); just make sure you
-pushed your changes to the remote repository before deploying. Never publish/list
-on the community feed unless the user explicitly asked to publish.
+**Deploy only when authorized** — `higgsfield website deploy <website_id>` builds
+via CI and ships the live site immediately. Run the applicable local checks
+below and push the intended changes before an authorized deployment. Otherwise
+deliver the verified local build for review. Never publish/list on the community
+feed unless the user explicitly asked to publish.
 
 **Publishing ("show in feed").** When the user asks to publish / share / put
 the app on the feed, run `higgsfield website publish <website_id>` — it lists

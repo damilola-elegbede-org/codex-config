@@ -127,8 +127,8 @@ Feed the background into `--bg`, put the text in `<h1>`, tune it in a browser.
 ## Layer 2 — bake to PNG (canvas)
 
 The same look, re-rendered in canvas at native resolution — a clean PNG, zero dependencies.
-**Important: wait for the font to load (`document.fonts.load`) BEFORE the first draw, or it
-bakes the system font.**
+**Wait for the font stylesheet's `load` event, then load the registered font
+(`document.fonts.load`) BEFORE the first draw, or it bakes the system font.**
 
 ```html
 <canvas id="c"></canvas>
@@ -138,8 +138,13 @@ async function bake({ src, lines, W, H, out='baked.png' }) {
   const fontLink = document.createElement('link');
   fontLink.rel = 'stylesheet';
   fontLink.href = 'https://fonts.googleapis.com/css2?family=Anton&display=swap';
-  document.head.appendChild(fontLink);
-  await document.fonts.load('120px "Anton"');
+  await new Promise((resolve, reject) => {
+    fontLink.onload = resolve;
+    fontLink.onerror = () => reject(new Error('Anton font stylesheet failed to load'));
+    document.head.appendChild(fontLink);
+  });
+  const faces = await document.fonts.load('120px "Anton"');
+  if (faces.length === 0) throw new Error('Anton font was not registered by the stylesheet');
   await document.fonts.ready;
 
   // 2) background
@@ -214,7 +219,7 @@ bake({
 
 Mechanics that are easy to forget:
 - **`strokeText` before `fillText`** — stroke under fill (the equivalent of `paint-order: stroke fill`).
-- **`document.fonts.load(...)` + `await document.fonts.ready`** before the first draw — else the first frame bakes the system font.
+- **Stylesheet `load`, then `document.fonts.load(...)` with a nonempty result, then `await document.fonts.ready`** before the first draw — abort on loading errors instead of baking a fallback font.
 - **`lineJoin='round'`** — removes sharp artifacts on the corners of a thick stroke.
 - **`img.crossOrigin='anonymous'`** only when the background is a URL; for a local file
   (`<input type=file>` → `URL.createObjectURL`) it isn't needed and CORS doesn't block.

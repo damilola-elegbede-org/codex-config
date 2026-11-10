@@ -1,6 +1,6 @@
 # Marketing Studio Modes
 
-Current mode values for `marketing_studio_video` `--mode`. The live schema is the source of truth, so run `higgsfield model get marketing_studio_video` if validation fails.
+Mode descriptions below are the upstream v0.13.0 snapshot for `marketing_studio_video` `--mode`. Inspect `higgsfield model get marketing_studio_video --json` before submission; the live schema is the source of truth. Resolution values and the aspect/duration defaults below were checked through that read-only command on 2026-11-09; other entries retain the source snapshot.
 
 | `--mode` slug | Human-readable label | Hook/setting | Best for |
 |---|---|---|---|
@@ -29,11 +29,11 @@ The "Hook/setting" column shows whether `--hook_id` and `--setting_id` are valid
 
 ## Other parameters
 
-For `marketing_studio_video`, the API accepts:
+For `marketing_studio_video`, consult these parameters against the live schema:
 
-- `aspect_ratio`: `auto`, `21:9`, `16:9`, `4:3`, `1:1`, `3:4`, `9:16` (default `16:9`).
-- `duration`: integer ≥ 4 seconds. No fixed cap; check `higgsfield model get marketing_studio_video` for the current upper bound.
-- `resolution`: `480p` or `720p` (default `720p`).
+- `aspect_ratio`: `auto`, `21:9`, `16:9`, `4:3`, `1:1`, `3:4`, `9:16` (checked default `9:16`).
+- `duration`: integer seconds (checked default `15`). The checked schema does not advertise numeric bounds; do not infer unlimited duration from their absence.
+- `resolution`: `480p`, `720p`, or `1080p` (checked default `720p`).
 - `generate_audio`: boolean (default `false`). Generates audio for the video.
 - `avatars`: array of `{id, type}` where `type` is `preset` or `custom`. See `marketing-avatars.md`.
 - `product_ids`: array of product UUIDs (from `higgsfield marketing-studio products fetch` or `create`). See `marketing-products.md`.

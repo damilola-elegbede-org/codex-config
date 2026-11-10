@@ -9,6 +9,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import runpy
 import struct
 import subprocess
 import sys
@@ -30,6 +31,17 @@ for bundle in bundles:
 
 brandkit = skills / "higgsfield-brandkit/scripts/brandkit.py"
 inspector = skills / "higgsfield-websites/scripts/glb_inspect.py"
+# Reject unsupported Blender before factory-resetting or importing a scene.
+# This minimal bpy stub intentionally has no scene mutation methods.
+blender_merger = skills / "higgsfield-websites/scripts/merge_anim_glbs.py"
+for version in ((4, 1, 0), (5, 0, 0), (6, 0, 0)):
+    with patch.dict(sys.modules, {"bpy": SimpleNamespace(app=SimpleNamespace(version=version))}):
+        try:
+            runpy.run_path(str(blender_merger), run_name="__main__")
+        except SystemExit as error:
+            assert "requires Blender 4.2 through 4.x" in str(error), error
+        else:
+            raise AssertionError(f"Unsupported Blender {version} was accepted")
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location("brandkit_helpers", brandkit)
 helper = importlib.util.module_from_spec(spec)

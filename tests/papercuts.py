@@ -15,6 +15,7 @@ spec.loader.exec_module(reporter)
 
 class PapercutTests(unittest.TestCase):
     def setUp(self):
+        (ROOT / ".tmp").mkdir(exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=ROOT / ".tmp")
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)

@@ -14,7 +14,7 @@ export const Route = createRootRouteWithContext()({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Acme Studio — Creative Agency for Bold Brands' },
+      { title: 'Acme Studio | Creative Agency for Bold Brands' },
       { name: 'description', content: 'Acme Studio builds brand identities, websites, and campaigns that stand out. Based in NYC, working worldwide.' },
       { name: 'author', content: 'Acme Studio' },
       { name: 'theme-color', content: '#0A0A0A' },
@@ -39,13 +39,13 @@ import { createFileRoute } from '@tanstack/react-router';
 export const Route = createFileRoute('/services')({
   head: () => ({
     meta: [
-      { title: 'Services — Acme Studio' },
+      { title: 'Services | Acme Studio' },
       { name: 'description', content: 'Brand identity, web design, and digital campaigns. See what Acme Studio can build for you.' },
-      { property: 'og:title', content: 'Services — Acme Studio' },
+      { property: 'og:title', content: 'Services | Acme Studio' },
       { property: 'og:description', content: 'Brand identity, web design, and digital campaigns.' },
       { property: 'og:url', content: 'https://acme-studio.higgsfield.app/services' },
       { property: 'og:image', content: 'https://acme-studio.higgsfield.app/og-services.png' },
-      { name: 'twitter:title', content: 'Services — Acme Studio' },
+      { name: 'twitter:title', content: 'Services | Acme Studio' },
       { name: 'twitter:description', content: 'Brand identity, web design, and digital campaigns.' },
     ],
     links: [
@@ -58,8 +58,8 @@ export const Route = createFileRoute('/services')({
 
 ### Title Formula
 
-- **Homepage:** `[Brand] — [Tagline]` → `Acme Studio — Creative Agency for Bold Brands`
-- **Subpages:** `[Page] — [Brand]` → `Services — Acme Studio`
+- **Homepage:** `[Brand] | [Tagline]` → `Acme Studio | Creative Agency for Bold Brands`
+- **Subpages:** `[Page] | [Brand]` → `Services | Acme Studio`
 
 Keep titles under 60 characters. The brand always appears.
 
@@ -151,12 +151,12 @@ Technical SEO infrastructure that every Higgsfield website needs. This skill cov
 
 ### robots.txt Server Route
 
-Create `app/src/routes/robots.txt.ts`:
+Create `app/src/routes/robots[.]txt.ts`:
 
 ```ts
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/robots')({
+export const Route = createFileRoute('/robots.txt')({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -178,18 +178,22 @@ export const Route = createFileRoute('/robots')({
 });
 ```
 
-The file path is `robots.txt.ts` — TanStack Start maps the `.txt` extension to serve at `/robots.txt`. Origin is derived from the request so it works on any host the site is served from.
+The `[.]` in `robots[.]txt.ts` escapes the routing separator, so the filename
+and `createFileRoute('/robots.txt')` both identify `/robots.txt`. The sitemap
+uses the same convention. See TanStack's [file naming conventions](https://tanstack.com/router/latest/docs/routing/file-naming-conventions)
+and [dynamic SEO route examples](https://tanstack.com/start/latest/docs/framework/react/guide/seo).
+Origin is derived from the request so it works on any host the site is served from.
 
 ### sitemap.xml Server Route
 
-Create `app/src/routes/sitemap.xml.ts`:
+Create `app/src/routes/sitemap[.]xml.ts`:
 
 #### Single-page site (landing page)
 
 ```ts
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/sitemap')({
+export const Route = createFileRoute('/sitemap.xml')({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -229,7 +233,7 @@ const ROUTES = [
   { path: '/blog', priority: '0.7', changefreq: 'weekly' },
 ];
 
-export const Route = createFileRoute('/sitemap')({
+export const Route = createFileRoute('/sitemap.xml')({
   server: {
     handlers: {
       GET: async ({ request }) => {
@@ -311,7 +315,7 @@ export const Route = createFileRoute('/about')({
       { rel: 'canonical', href: 'https://acme-studio.higgsfield.app/about' },
     ],
     meta: [
-      { title: 'About — Acme Studio' },
+      { title: 'About | Acme Studio' },
       // ... other meta
     ],
   }),

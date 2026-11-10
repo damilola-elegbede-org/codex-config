@@ -1,5 +1,8 @@
 # merge_anim_glbs.py — Blender CLI: merge single-clip GLBs (Meshy outputs)
 # into one multi-clip GLB, with the MANDATORY root-bone scale fix.
+# Requires Blender 4.2 through 4.x and its legacy Action.fcurves API.
+# Blender 5+ is unsupported; use the stdlib glb_merge_anims.py merger instead.
+# API removal: https://developer.blender.org/docs/release_notes/5.0/python_api/
 #
 # Usage:
 #   blender -b -P merge_anim_glbs.py -- \
@@ -92,6 +95,11 @@ def fix_root_scale(act, root):
 
 
 def main():
+    if not (4, 2, 0) <= bpy.app.version < (5, 0, 0):
+        raise SystemExit(
+            "merge_anim_glbs.py requires Blender 4.2 through 4.x; "
+            "use glb_merge_anims.py for the Blender-independent merge path"
+        )
     base_path, clip_args, out_path = get_args()
     bpy.ops.wm.read_factory_settings(use_empty=True)
 
