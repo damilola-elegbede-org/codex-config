@@ -27,7 +27,7 @@ jobs:
           kept=0
           failed=0
           while IFS=$'\t' read -r id accessed; do
-            if [[ "$accessed" < "$cutoff" ]]; then
+            if [[ -n "$accessed" && "$accessed" < "$cutoff" ]]; then
               if gh api -X DELETE "repos/${REPO}/actions/caches/${id}" > /dev/null; then
                 deleted=$((deleted + 1))
               else
